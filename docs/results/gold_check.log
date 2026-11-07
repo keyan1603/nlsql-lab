@@ -1,0 +1,59 @@
+| id   | category         | level   | rows x cols              | first rows                                                   | flags   |
+|------|------------------|---------|--------------------------|--------------------------------------------------------------|---------|
+| L01  | lookup           | easy    | 1 x 1                    | ('priya.nair2@example.com',)                                 |         |
+| L02  | lookup           | easy    | 1 x 1                    | ('NA',)                                                      |         |
+| L03  | lookup           | easy    | 1 x 2                    | (Decimal('1398.83'), 'EUR')                                  |         |
+| L04  | lookup           | easy    | 1 x 1                    | (Decimal('187.14'),)                                         |         |
+| L05  | lookup           | easy    | 1 x 1                    | (datetime.date(2021, 2, 15),)                                |         |
+| A01  | filter_aggregate | easy    | 1 x 1                    | (54,)                                                        |         |
+| A02  | filter_aggregate | easy    | 1 x 1                    | (5,)                                                         |         |
+| A03  | filter_aggregate | easy    | 1 x 1                    | (10,)                                                        |         |
+| A04  | filter_aggregate | medium  | 1 x 1                    | (Decimal('238.660000'),)                                     |         |
+| A05  | filter_aggregate | easy    | 1 x 1                    | (34,)                                                        |         |
+| A06  | filter_aggregate | easy    | 1 x 1                    | (74,)                                                        |         |
+| A07  | filter_aggregate | easy    | 1 x 1                    | (5,)                                                         |         |
+| A08  | filter_aggregate | easy    | 1 x 1                    | (12,)                                                        |         |
+| J01  | join             | medium  | 19 x 1                   | ('Elena Silva',); ('Hannah Larsen',)                         |         |
+| J02  | join             | easy    | 1 x 1                    | ('Elena Novak',)                                             |         |
+| J03  | join             | medium  | 3 x 1                    | ('Maple Throw Blanket',); ('Comet Noise-Cancelling Headset', |         |
+| J04  | join             | medium  | 22 x 2                   | ('T-70003', 'Felix Ito'); ('T-70016', 'Lucas Okoye')         |         |
+| J05  | join             | medium  | 1 x 1                    | ('Omar Haddad',)                                             |         |
+| J06  | join             | medium  | 1 x 1                    | ('Elena Novak',)                                             |         |
+| J07  | join             | medium  | 8 x 2                    | ('OFC-019', 1); ('OFC-018', 4)                               |         |
+| J08  | join             | hard    | 2 x 1                    | ('Pebble Storage Baskets',); ('Willow Pen Set',)             |         |
+| G01  | group_by         | medium  | 4 x 2                    | ('LA', 26); ('EU', 58)                                       |         |
+| G02  | group_by         | medium  | 5 x 2                    | ('C-1038', 10); ('C-1045', 10)                               |         |
+| G03  | group_by         | easy    | 4 x 2                    | (3, 61); (4, 35)                                             |         |
+| G04  | group_by         | hard    | 1 x 1                    | (Decimal('2.1115'),)                                         |         |
+| G05  | group_by         | medium  | 1 x 2                    | ('SHIP', 39)                                                 |         |
+| G06  | group_by         | medium  | 4 x 2                    | ('DMG', 8); ('LAT', 6)                                       |         |
+| G07  | group_by         | medium  | 1 x 1                    | ('PHN',)                                                     |         |
+| G08  | group_by         | hard    | 10 x 2                   | ('2026-01', 23); ('2026-02', 14)                             |         |
+| D01  | date_time        | easy    | 1 x 1                    | (25,)                                                        |         |
+| D02  | date_time        | medium  | 1 x 1                    | (70,)                                                        |         |
+| D03  | date_time        | hard    | 1 x 1                    | (18,)                                                        |         |
+| D04  | date_time        | hard    | 1 x 1                    | (Decimal('46.2'),)                                           |         |
+| D05  | date_time        | medium  | 1 x 2                    | ('Monday', 47)                                               |         |
+| D06  | date_time        | medium  | 1 x 1                    | (74,)                                                        |         |
+| N01  | nulls_state      | easy    | 1 x 1                    | (22,)                                                        |         |
+| N02  | nulls_state      | easy    | 1 x 1                    | (5,)                                                         |         |
+| N03  | nulls_state      | medium  | 6 x 1                    | ('C-1055',); ('C-1056',)                                     |         |
+| N04  | nulls_state      | easy    | 1 x 1                    | (5,)                                                         |         |
+| F01  | fanout_trap      | medium  | 1 x 1                    | (Decimal('1569'),)                                           |         |
+| F02  | fanout_trap      | hard    | 3 x 2                    | ('G', Decimal('68898.43')); ('S', Decimal('145114.19'))      |         |
+| F03  | fanout_trap      | medium  | 1 x 1                    | (172,)                                                       |         |
+| F04  | fanout_trap      | medium  | 4 x 2                    | ('ELC', Decimal('419')); ('HOM', Decimal('369'))             |         |
+| H01  | hierarchy        | medium  | 1 x 1                    | ('Amara Singh',)                                             |         |
+| H02  | hierarchy        | medium  | 3 x 1                    | ('Tomas Brandt',); ('Amara Singh',)                          |         |
+| H03  | hierarchy        | hard    | 1 x 1                    | (23,)                                                        |         |
+| P01  | policy_dates     | medium  | 1 x 1                    | ('500.00',)                                                  |         |
+| P02  | policy_dates     | medium  | 1 x 1                    | ('250.00',)                                                  |         |
+| P03  | policy_dates     | hard    | 1 x 1                    | (27,)                                                        |         |
+| U01  | unanswerable     | medium  | (no query: unanswerable) |                                                              |         |
+| U02  | unanswerable     | medium  | (no query: unanswerable) |                                                              |         |
+| U03  | unanswerable     | medium  | (no query: unanswerable) |                                                              |         |
+| U04  | unanswerable     | medium  | (no query: unanswerable) |                                                              |         |
+| M01  | ambiguous        | medium  | (no query: clarify)      |                                                              |         |
+| M02  | ambiguous        | medium  | (no query: clarify)      |                                                              |         |
+
+55 questions, 49 with gold queries, 0 failing checks, 0 set problems
