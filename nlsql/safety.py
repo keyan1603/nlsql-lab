@@ -28,7 +28,8 @@ def check_select(sql: str) -> SafetyVerdict:
         statements = sqlglot.parse(text, read="mysql")
     except sqlglot.errors.ParseError as exc:
         return SafetyVerdict(False, f"does not parse as MySQL: {str(exc)[:120]}")
-    statements = [s for s in statements if s is not None]
+    # a trailing comment after the semicolon parses as a comment-only 'statement' (exp.Semicolon); it executes nothing, so it is ignored
+    statements = [s for s in statements if s is not None and not isinstance(s, exp.Semicolon)]
     if len(statements) != 1:
         return SafetyVerdict(False, f"{len(statements)} statements; exactly one is allowed")
     tree = statements[0]

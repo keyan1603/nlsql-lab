@@ -34,6 +34,7 @@ class Prediction:
     latency_s: float = 0.0
     tokens_in: int = 0
     tokens_out: int = 0
+    how: str = ""                  # how the statement was found in the model's text: fence, bare, marker, unfinished or none
 
 
 @dataclass

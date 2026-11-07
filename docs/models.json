@@ -1,0 +1,29 @@
+{
+  "Ellbendls/Qwen-3-4b-Text_to_SQL-GGUF/Qwen-3-4b-Text_to_SQL-q4_k_m.gguf": {
+    "bytes": 2496710304,
+    "file": "Qwen-3-4b-Text_to_SQL-q4_k_m.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "Ellbendls\\Qwen-3-4b-Text_to_SQL-GGUF\\Qwen-3-4b-Text_to_SQL-q4_k_m.gguf",
+    "repo": "Ellbendls/Qwen-3-4b-Text_to_SQL-GGUF",
+    "repo_revision": "3ed770490f6e24ee183efa3f31b101bd81247505",
+    "sha256": "2cba02402f2615ad0819b93ddc2ffcbc2699730cff79f2f6fd8591d20abe34e9"
+  },
+  "lmstudio-community/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf": {
+    "bytes": 2497280448,
+    "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "licence": "not stated in the repo metadata",
+    "path_hint": "lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "repo": "lmstudio-community/Qwen3-4B-Instruct-2507-GGUF",
+    "repo_revision": "4edb920b6f14e3b9284d4502a6485103d72cde05",
+    "sha256": "8cdb57cbb880d313736a9bc4e3d3d2485f145b5e19cf33783746e753e82641fc"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf": {
+    "bytes": 4683074368,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "50840d65a753074a670d7929ca0a4b5d633b0a4b435f1a68b4a6fba26c4d18bb"
+  }
+}

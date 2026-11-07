@@ -178,3 +178,14 @@ def test_everything_else_is_refused(sql):
 def test_the_reason_is_human_readable():
     assert "SELECT" in check_select("DROP TABLE emp").reason
     assert "statements" in check_select("SELECT 1; SELECT 2").reason
+
+
+def test_a_trailing_comment_after_the_semicolon_is_not_a_second_statement():
+    assert check_select("SELECT COUNT(*) FROM ord_hdr;  -- 1 = Sunday, 7 = Saturday").ok
+    assert check_select("SELECT 1;\n/* note */").ok
+    assert check_select("SELECT 1 -- inline note").ok
+
+
+def test_a_real_second_statement_is_still_refused_even_with_a_comment():
+    assert not check_select("SELECT 1; DROP TABLE emp; -- cleanup").ok
+    assert not check_select("SELECT 1; SELECT 2 -- two selects").ok
