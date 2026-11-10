@@ -86,3 +86,22 @@ Full table and caveats in `docs/results/quant_sweep.md`; driver in `scripts/quan
 (Five more levels are in the full table.) From Q8_0 down to Q4_K_M the file is 42 percent smaller and every one of the 55 questions has the same pass or fail outcome. Q3_K_M is 53 percent smaller and flips two questions. Q2_K is 63 percent smaller, loses 2 of the 49 answerable questions and flips 3 of 55. Time and memory fall with file size, because more of the model fits on a 4 GB GPU. Differences of a question or two are inside the run-to-run variation of the 7B model, and several timings were taken while large downloads were running; read the table as a trend.
 
 Limits: one machine, one synthetic dataset of a few hundred rows, 55 questions written by one author, one model for the compression sweep. The numbers say how a model does on this schema, not on yours.
+
+### Does the compression show up? Easy questions hide it, hard ones show it
+
+The core questions above are easy enough that every level looked the same. A stress set was added to give a decline somewhere to appear: 11 more tables (22 in all, with confusable names such as `ship_status` beside `ord_status`), a 41,800-row clickstream table and 126 harder questions in nine categories (many-table joins, window functions, multi-step CTEs, correlated subqueries, set operations, pivots, date bucketing, definitions given in the question, and choosing the right table among look-alikes). The patterns follow what Spider 2.0, BEAVER and BIRD single out as hard. Full tables, per-category scores and the chart are in `docs/results/quant_analysis.md` and `quant_curve.png`; the question files are `data/questions_hard.json` (72) and `data/questions_hard2.json` (54).
+
+| Level | File | Core set (49) | Hard set, 126 questions | Hard set, SQL errors | Hard set vs Q8_0 (gains, losses, p) |
+|---|---|---|---|---|---|
+| Q8_0 | 8.10 GB | 42 (85.7%) | 68 (54.0%) | 21 | reference |
+| Q6_K | 6.25 GB | 42 (85.7%) | 68 (54.0%) | 22 | 1, 1, p 1.00 |
+| Q5_K_M | 5.45 GB | 42 (85.7%) | 68 (54.0%) | 18 | 4, 4, p 1.00 |
+| Q4_K_M | 4.68 GB | 42 (85.7%) | 71 (56.3%) | 17 | 8, 5, p 0.58 |
+| Q3_K_M | 3.81 GB | 42 (85.7%) | 69 (54.8%) | 19 | 9, 8, p 1.00 |
+| **Q2_K** | 3.02 GB | 40 (81.6%) | **53 (42.1%)** | **31** | **10, 25, p 0.017** |
+
+(The first 72 hard questions were also run on all eleven levels; the extra 54 on the six shown. The first half alone gave the same picture: Q2_K 28 of 72 against 37 for Q8_0, p 0.093, with every other level between 34 and 42.)
+
+- **From 8-bit down to 3-bit the hard set shows no measurable loss.** Q6_K, Q5_K_M, Q4_K_M and Q3_K_M score within 3 questions of Q8_0, and every comparison has p above 0.5. A model file 53 percent smaller (Q3_K_M) answered the hard questions as well as the 8-bit one.
+- **At 2-bit the hard questions show a drop the easy ones hid.** On the core set Q2_K lost 2 of 49 (p 0.5, indistinguishable from noise). On the hard set it lost 12 points, 15 questions net (it got 25 right that Q8_0 got right and 10 that Q8_0 got wrong, p 0.017), and its invalid SQL rose from 21 to 31 answers. By category the damage is concentrated in correlated subqueries (3 of 14 against 8 of 14), window functions (2 against 5), questions with a definition in the text (2 against 5) and choosing the right table among look-alikes (11 against 14); pivots and joins held.
+- **Read the p value with care.** The 0.017 is for one comparison out of five made against Q8_0; corrected for five comparisons it is about 0.085, so the 2-bit drop is suggestive and consistent across both halves of the stress set, not proven. Only the one 7B model was swept, and the 7B model's output is not perfectly repeatable run to run (4 of 55 answers changed between two runs of the same file).

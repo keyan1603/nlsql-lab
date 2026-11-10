@@ -1,0 +1,74 @@
+{
+  "Q2_K": {
+    "label": "xiyan7b-q2k-hard2",
+    "file_gb": null,
+    "accuracy": 0.463,
+    "correct": 25,
+    "declined": 0,
+    "sql_errors": 10,
+    "latency_mean_s": 13.59,
+    "tok_s": 4.75,
+    "gpu_peak_mib": 2177,
+    "rss_peak_mib": 3296
+  },
+  "Q3_K_M": {
+    "label": "xiyan7b-q3km-hard2",
+    "file_gb": null,
+    "accuracy": 0.5926,
+    "correct": 32,
+    "declined": 0,
+    "sql_errors": 8,
+    "latency_mean_s": 16.19,
+    "tok_s": 4.19,
+    "gpu_peak_mib": 2573,
+    "rss_peak_mib": 4048
+  },
+  "Q4_K_M": {
+    "label": "xiyan7b-q4km-hard2",
+    "file_gb": null,
+    "accuracy": 0.5556,
+    "correct": 30,
+    "declined": 0,
+    "sql_errors": 7,
+    "latency_mean_s": 16.3,
+    "tok_s": 3.99,
+    "gpu_peak_mib": 3003,
+    "rss_peak_mib": 4875
+  },
+  "Q5_K_M": {
+    "label": "xiyan7b-q5km-hard2",
+    "file_gb": null,
+    "accuracy": 0.5556,
+    "correct": 30,
+    "declined": 0,
+    "sql_errors": 8,
+    "latency_mean_s": 17.24,
+    "tok_s": 3.73,
+    "gpu_peak_mib": 3309,
+    "rss_peak_mib": 5605
+  },
+  "Q6_K": {
+    "label": "xiyan7b-q6k-hard2",
+    "file_gb": null,
+    "accuracy": 0.5556,
+    "correct": 30,
+    "declined": 0,
+    "sql_errors": 8,
+    "latency_mean_s": 18.09,
+    "tok_s": 3.63,
+    "gpu_peak_mib": 3679,
+    "rss_peak_mib": 6371
+  },
+  "Q8_0": {
+    "label": "xiyan7b-q80-hard2",
+    "file_gb": null,
+    "accuracy": 0.5741,
+    "correct": 31,
+    "declined": 0,
+    "sql_errors": 7,
+    "latency_mean_s": 27.2,
+    "tok_s": 2.48,
+    "gpu_peak_mib": 3905,
+    "rss_peak_mib": 8157
+  }
+}

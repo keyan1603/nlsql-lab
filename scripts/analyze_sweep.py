@@ -24,7 +24,21 @@ ORDER = sorted(FILE_GB, key=FILE_GB.get)
 
 
 def label(quant: str, kind: str) -> str:
-    return f"xiyan7b-{quant.lower().replace('_', '')}" + ("-hard" if kind == "hard" else "")
+    return f"xiyan7b-{quant.lower().replace('_', '')}" + ("" if kind == "core" else f"-{kind}")
+
+
+def load_kind(quant: str, kind: str) -> dict | None:
+    """The saved answers of one level on one question set; "hardall" is both halves of the stress set together."""
+    if kind == "hardall":
+        parts = [RUNS / f"{label(quant, k)}.jsonl" for k in ("hard", "hard2")]
+        if not all(p.exists() for p in parts):
+            return None
+        merged: dict = {}
+        for p in parts:
+            merged.update(load(p))
+        return merged
+    path = RUNS / f"{label(quant, kind)}.jsonl"
+    return load(path) if path.exists() else None
 
 
 def load(path: Path) -> dict:
@@ -58,9 +72,9 @@ def answerable(records: dict) -> list[str]:
 def analyse(kind: str) -> dict | None:
     runs = {}
     for q in ORDER:
-        path = RUNS / f"{label(q, kind)}.jsonl"
-        if path.exists():
-            runs[q] = load(path)
+        records = load_kind(q, kind)
+        if records:
+            runs[q] = records
     if "Q8_0" not in runs:
         return None
     ref = runs["Q8_0"]
@@ -83,13 +97,14 @@ def analyse(kind: str) -> dict | None:
 def categories(kind: str) -> dict:
     from nlsql.config import ROOT as R
     from nlsql.questions import load_questions
-    qs = {q.id: q.category for q in load_questions(R / "data" / ("questions_hard.json" if kind == "hard" else "questions.json"))}
+    files = {"core": ["questions.json"], "hard": ["questions_hard.json"], "hard2": ["questions_hard2.json"], "hardall": ["questions_hard.json", "questions_hard2.json"]}[kind]
+    qs = {q.id: q.category for f in files for q in load_questions(R / "data" / f)}
     out: dict = {}
     for quant in ORDER:
-        path = RUNS / f"{label(quant, kind)}.jsonl"
-        if not path.exists():
+        records = load_kind(quant, kind)
+        if not records:
             continue
-        for qid, r in load(path).items():
+        for qid, r in records.items():
             if qid in qs and r["outcome"] in ("correct", "wrong_result", "sql_error", "unsafe", "timeout", "no_sql", "wrongly_refused"):
                 c = out.setdefault(qs[qid], {}).setdefault(quant, [0, 0])
                 c[1] += 1
@@ -103,7 +118,8 @@ def markdown(results: list[dict]) -> str:
              "Gains and losses are questions a level got right that Q8_0 got wrong, and the reverse; p is the exact two-sided sign test on those "
              "discordant questions (McNemar's exact test). A small p says the flips went one way more than chance would.", ""]
     for res in results:
-        name = "Hard set (72 questions, 22 tables)" if res["kind"] == "hard" else "Core set (49 answerable questions, 11 tables)"
+        name = {"core": "Core set (49 answerable questions, 11 tables)", "hard": "Hard set, first half (72 questions, 22 tables)",
+                "hard2": "Hard set, second half (54 questions, 22 tables)", "hardall": "Hard set, both halves together (126 questions, six levels)"}[res["kind"]]
         lines += [f"## {name}", "", "| Level | File GB | Correct | Accuracy | 95% interval | SQL errors | Gains vs Q8_0 | Losses vs Q8_0 | Net | p (sign test) |", "|---|---|---|---|---|---|---|---|---|---|"]
         for q in reversed(ORDER):
             t = res["table"].get(q)
@@ -111,7 +127,7 @@ def markdown(results: list[dict]) -> str:
                 continue
             lines.append(f"| {q} | {FILE_GB[q]:.2f} | {t['correct']}/{t['n']} | {t['acc'] * 100:.1f}% | {t['lo'] * 100:.0f} to {t['hi'] * 100:.0f}% | {t['errors']} | {len(t['gains'])} | {len(t['losses'])} | {t['net']:+d} | {t['p']:.3f} |")
         lines.append("")
-    for kind in ("core", "hard"):
+    for kind in ("core", "hard", "hardall"):
         cats = categories(kind)
         if not cats:
             continue
@@ -126,10 +142,10 @@ def chart(results: list[dict]) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(9, 5.2), dpi=150)
-    colors = {"core": "#2b7bba", "hard": "#c0392b"}
-    names = {"core": "Core set (11 tables, 49 questions)", "hard": "Hard set (22 tables, 72 questions)"}
-    for res in results:
+    fig, ax = plt.subplots(figsize=(9, 6), dpi=150)
+    colors = {"core": "#2b7bba", "hard": "#c0392b", "hardall": "#7d3c98"}
+    names = {"core": "Core set (11 tables, 49 questions)", "hard": "Hard set, first half (22 tables, 72 questions)", "hardall": "Hard set, both halves (126 questions)"}
+    for res in [r for r in results if r["kind"] in names]:
         xs = [FILE_GB[q] for q in ORDER if q in res["table"]]
         ys = [res["table"][q]["acc"] * 100 for q in ORDER if q in res["table"]]
         lo = [res["table"][q]["lo"] * 100 for q in ORDER if q in res["table"]]
@@ -140,7 +156,7 @@ def chart(results: list[dict]) -> None:
     ax.set_ylabel("Execution accuracy (%)")
     ax.set_title("Accuracy against model size for XiYanSQL 7B, eleven quantizations")
     ax.grid(alpha=0.3)
-    ax.legend(loc="lower right")
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), frameon=False)
     ax.set_ylim(0, 100)
     for q in ("Q2_K", "Q4_K_M", "Q8_0"):
         ax.annotate(q, (FILE_GB[q], 3), ha="center", fontsize=8, color="#555")
@@ -150,7 +166,7 @@ def chart(results: list[dict]) -> None:
 
 
 def main() -> int:
-    results = [r for r in (analyse("core"), analyse("hard")) if r]
+    results = [r for r in (analyse("core"), analyse("hard"), analyse("hard2"), analyse("hardall")) if r]
     if not results:
         print("no runs found")
         return 1
