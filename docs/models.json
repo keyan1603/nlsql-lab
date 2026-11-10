@@ -17,6 +17,15 @@
     "repo_revision": "4edb920b6f14e3b9284d4502a6485103d72cde05",
     "sha256": "8cdb57cbb880d313736a9bc4e3d3d2485f145b5e19cf33783746e753e82641fc"
   },
+  "mradermacher/Arctic-Text2SQL-R1-7B-GGUF/Arctic-Text2SQL-R1-7B.Q4_K_M.gguf": {
+    "bytes": 4683074144,
+    "file": "Arctic-Text2SQL-R1-7B.Q4_K_M.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\Arctic-Text2SQL-R1-7B-GGUF\\Arctic-Text2SQL-R1-7B.Q4_K_M.gguf",
+    "repo": "mradermacher/Arctic-Text2SQL-R1-7B-GGUF",
+    "repo_revision": "8e1a51188952afa8021bce6c8b3e5b495b3e85cd",
+    "sha256": "9c005244e3ab7fada2c53a9511999f4d22fbbd4f76a4416416a6d41d82702255"
+  },
   "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf": {
     "bytes": 4683074368,
     "file": "XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf",
