@@ -24,8 +24,9 @@ PY = str(ROOT / "venv" / "Scripts" / "python.exe")
 
 
 def lms(*args, timeout=900) -> str:
-    p = subprocess.run([LMS, *args], capture_output=True, text=True, timeout=timeout)
-    return (p.stdout + p.stderr).replace("\r", "\n")
+    # lms draws progress spinners in non-ASCII characters; decode as UTF-8 and never fail on a stray byte
+    p = subprocess.run([LMS, *args], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+    return ((p.stdout or "") + (p.stderr or "")).replace("\r", "\n")
 
 
 def model_entries(prefix: str) -> dict:

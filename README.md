@@ -48,4 +48,41 @@ Environment: MySQL Community Server 26.10.0 on Windows, Python 3.13, PyMySQL 1.2
 - **The reader cannot write.** `INSERT`, `UPDATE`, `DELETE`, `DROP`, `CREATE` and `TRUNCATE` are all refused by the database. The account holds only `SELECT`, cannot see the `mysql` system schema, and cannot execute stored routines.
 - **The server-side time limit works, with a caveat.** A four-way join filtered on an expression is stopped at about 0.4 s with error 3024 for a 300 ms limit. Two things behaved differently from what one might assume. A plain `COUNT(*)` over a four-way cross join returned 90,842,562,801 in under a millisecond, because MySQL's optimizer does not scan it, so it is not a runaway query. And `SELECT SLEEP(3)` under a 300 ms limit returned `1` after 0.31 s without raising an error, because `SLEEP` reports interruption as a result. The safety check refuses `SLEEP` for that reason.
 
-Limits: one machine, one synthetic dataset of a few hundred rows, 55 questions written by one author. The numbers this harness produces will say how a model does on this schema, not on yours.
+## Local models
+
+Models are served by LM Studio (free of charge; its terms allow work use as of its July 2025 announcement, which the repo does not re-verify) and called through its local OpenAI-compatible endpoint. `scripts/fetch_model.py` downloads a named GGUF file from Hugging Face, checks its size and SHA-256 against what Hugging Face publishes, and records the licence tag and hash in `docs/models.json`. `scripts/run_eval.py` asks every question, extracts the SQL, grades it on the real database and saves the raw output of every answer to `runs/`. One prompt is used for all models (`nlsql/prompts.py`, greedy decoding), so a difference in score is a difference in model.
+
+### Four models, one prompt, 55 questions (each at Q4_K_M)
+
+| Model | Correct (of 49 answerable) | Declined correctly (of 6) | SQL errors | Mean s per question | Followed the output format |
+|---|---|---|---|---|---|
+| XiYanSQL-QwenCoder-7B-2504 (SQL specialist, 7B) | **42 (85.7%)** | 1 | 0 | 8.8 | 2 of 55 (bare statement 53) |
+| Arctic-Text2SQL-R1-7B (SQL specialist, 7B) | 40 (81.6%) | 0 | 8 | 73.8 | 55 of 55 |
+| Qwen3-4B-Instruct-2507 (general model, 4B) | 38 (77.5%) | 3 | 2 | 2.2 | 54 of 55 |
+| Qwen-3-4b-Text_to_SQL (SQL fine-tune of that same 4B model) | 34 (69.4%) | 0 | 3 | 5.9 | 0 of 55 |
+
+What the four runs showed (evidence in `docs/results/models/`):
+
+- **Specialist is not automatically better.** The SQL fine-tune of the 4B model scored 8 points below the general model it was tuned from, declined none of the six questions that should be declined, and was 2.7 times slower, because it writes the schema out again before answering. The 7B specialist, XiYan, was the best model.
+- **Output format is a property of the model.** The fine-tune ignored the requested code block on all 55 questions (it answers after a `SQL Query:` label, as in its training format), and XiYan returns a bare statement. `nlsql/extract.py` recovers the statement in every case and records how, so the share of answers that needed recovery is reported.
+- **Dialect leaks through the prompt.** Arctic wrote SQLite (`strftime`, `julianday`) against a MySQL prompt, and 7 of its 8 errors are those calls, which MySQL reads as unknown stored routines (`execute command denied` for the reader account). Its dates score was 1 of 6. The 4B fine-tune wrote SQL Server (`DATEADD`, `GETDATE`) and used `year_month` as an alias, which MySQL reserves.
+- **Declining is the weak point of every model.** Across the four models only 4 of the 24 questions that should be declined were handled correctly; the rest got an invented query (a `shipping_address` made by renaming the email column, a profit formula, "best customers" as Platinum).
+- **The comments in the schema are not worth a reliable number here.** Running the general model with the column comments stripped scored 73.5% against 77.5%, but 13 questions changed outcome in both directions (7 got worse, 6 better).
+- **The 4B models repeat exactly; the 7B does not quite.** Two runs of the 4B general model at temperature 0 produced byte-identical text for all 55 answers. Two runs of the 7B XiYan file produced different text on 4 of 55 answers with the same pass or fail on all 55.
+
+### Shrinking a model: eleven quantizations of XiYan 7B
+
+Full table and caveats in `docs/results/quant_sweep.md`; driver in `scripts/quant_sweep.py`.
+
+| Level | File | Correct (of 49) | Declined (of 6) | Mean s per question | GPU peak | Process peak |
+|---|---|---|---|---|---|---|
+| Q2_K | 3.02 GB | 40 | 0 | 4.8 | 2.1 GiB | 3.2 GiB |
+| Q3_K_M | 3.81 GB | 42 | 1 | 8.6 | 2.5 GiB | 3.9 GiB |
+| Q4_K_M | 4.68 GB | 42 | 1 | 7.8 | 2.9 GiB | 4.8 GiB |
+| Q5_K_M | 5.45 GB | 42 | 1 | 8.7 | 3.2 GiB | 5.5 GiB |
+| Q6_K | 6.25 GB | 42 | 1 | 10.3 | 3.6 GiB | 6.2 GiB |
+| Q8_0 | 8.10 GB | 42 | 1 | 13.0 | 3.8 GiB | 6.6 GiB |
+
+(Five more levels are in the full table.) From Q8_0 down to Q4_K_M the file is 42 percent smaller and every one of the 55 questions has the same pass or fail outcome. Q3_K_M is 53 percent smaller and flips two questions. Q2_K is 63 percent smaller, loses 2 of the 49 answerable questions and flips 3 of 55. Time and memory fall with file size, because more of the model fits on a 4 GB GPU. Differences of a question or two are inside the run-to-run variation of the 7B model, and several timings were taken while large downloads were running; read the table as a trend.
+
+Limits: one machine, one synthetic dataset of a few hundred rows, 55 questions written by one author, one model for the compression sweep. The numbers say how a model does on this schema, not on yours.

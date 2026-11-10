@@ -26,6 +26,51 @@
     "repo_revision": "8e1a51188952afa8021bce6c8b3e5b495b3e85cd",
     "sha256": "9c005244e3ab7fada2c53a9511999f4d22fbbd4f76a4416416a6d41d82702255"
   },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.IQ4_XS.gguf": {
+    "bytes": 4250299200,
+    "file": "XiYanSQL-QwenCoder-7B-2504.IQ4_XS.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.IQ4_XS.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "3c53272635751ea473832e26931c58fedb2a40f411fd2c99c6943d0a527fd749"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q2_K.gguf": {
+    "bytes": 3015940928,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q2_K.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q2_K.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "d2b54c532f7060a5386396abfd0c0375eda79afcf4fd6f7ec756d87cd9afda35"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q3_K_L.gguf": {
+    "bytes": 4088460096,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q3_K_L.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q3_K_L.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "d70eca20ec9b5741e3803cee97e84632bba78c63bcf5a68de1883559c77db81d"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q3_K_M.gguf": {
+    "bytes": 3808392000,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q3_K_M.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q3_K_M.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "200e74d8d9575bb8967e47f7de2d64a3ad7fe42b9aa6ca29d555fef9d62c3f2f"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q3_K_S.gguf": {
+    "bytes": 3492369216,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q3_K_S.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q3_K_S.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "319cb39ca7c452111798a927cbcaaffc8212f4d32b3283ba9cceeefd6b6d4038"
+  },
   "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf": {
     "bytes": 4683074368,
     "file": "XiYanSQL-QwenCoder-7B-2504.Q4_K_M.gguf",
@@ -34,5 +79,50 @@
     "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
     "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
     "sha256": "50840d65a753074a670d7929ca0a4b5d633b0a4b435f1a68b4a6fba26c4d18bb"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q4_K_S.gguf": {
+    "bytes": 4457769792,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q4_K_S.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q4_K_S.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "06990ae127f7e2a0205c3e0bf0d9f0ea853bf91a68d7ebd2bded45bbc66e1ceb"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q5_K_M.gguf": {
+    "bytes": 5444832064,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q5_K_M.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q5_K_M.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "78fa28d0c53fb56498ea92d7ec13d9b3485e7264afe61aa783ef58e01422e278"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q5_K_S.gguf": {
+    "bytes": 5315177280,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q5_K_S.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q5_K_S.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "097cd7663f167548da18faa2a6d28235e9ec42fe6bc9c643a5dfcb7014bc337c"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q6_K.gguf": {
+    "bytes": 6254199616,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q6_K.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q6_K.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "e5a4ad1429da27fd5bff7144fa4903ddb6b50abfaec37ddb73745475a2541de7"
+  },
+  "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.Q8_0.gguf": {
+    "bytes": 8098526016,
+    "file": "XiYanSQL-QwenCoder-7B-2504.Q8_0.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-7B-2504-GGUF\\XiYanSQL-QwenCoder-7B-2504.Q8_0.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF",
+    "repo_revision": "4534c21a8e97ba2cc85faf4446e6e0ee737b761c",
+    "sha256": "9e848d75e2942ace89f971994424aa2f53327ee1c2e1d0497572ab0bcd514259"
   }
 }
