@@ -3,3 +3,4 @@ cryptography>=50
 sqlglot>=30
 pytest>=9
 tabulate>=0.10
+matplotlib>=3.9

@@ -195,3 +195,32 @@ def test_alternative_correct_hard_queries_are_accepted(reader, qid, sql):
     q = next(x for x in HARD if x.id == qid)
     v = grade(q, Prediction("sql", sql=sql), reader)
     assert v.passed, (qid, v.outcome, v.detail)
+
+
+# ---- the second half of the stress set
+HARD2 = load_questions(ROOT / "data" / "questions_hard2.json")
+
+
+def test_the_second_hard_set_is_well_formed_distinct_and_balanced():
+    assert problems(HARD2) == [] and len(HARD2) == 54
+    assert all(n == 6 for n in Counter(q.category for q in HARD2).values()) and len(Counter(q.category for q in HARD2)) == 9
+    ids = [q.id for q in HARD + HARD2 + load_questions()]
+    assert len(ids) == len(set(ids))
+    texts = [q.question for q in HARD + HARD2 + load_questions()]
+    assert len(texts) == len(set(texts))
+
+
+def test_every_second_set_gold_query_is_a_safe_select_on_real_tables():
+    known = set(TABLE_ORDER) | set(EXT_TABLE_ORDER)
+    for q in HARD2:
+        assert check_select(q.gold_sql).ok, (q.id, check_select(q.gold_sql).reason)
+        tree = sqlglot.parse_one(q.gold_sql, read="mysql")
+        ctes = {c.alias for c in tree.find_all(exp.CTE)}
+        assert {t.name for t in tree.find_all(exp.Table)} - ctes <= known, q.id
+
+
+@pytest.mark.integration
+def test_every_second_set_gold_query_runs_returns_rows_and_is_stable(reader):
+    for q in HARD2:
+        a, b = db.run_query(reader, q.gold_sql), db.run_query(reader, q.gold_sql)
+        assert a.rows and a.rows == b.rows, q.id

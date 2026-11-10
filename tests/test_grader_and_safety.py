@@ -186,6 +186,14 @@ def test_a_trailing_comment_after_the_semicolon_is_not_a_second_statement():
     assert check_select("SELECT 1 -- inline note").ok
 
 
+def test_text_that_is_not_valid_mysql_is_a_syntax_failure_not_an_unsafe_one(fake_db):
+    assert check_select("SELECT COUNT(*) FROM t WHERE a = 1 LEFT JOIN u ON t.a = u.a WHERE u.b IS NULL").kind == "syntax"
+    assert check_select("DROP TABLE emp").kind == "policy"
+    v = grade(q(), Prediction("sql", sql="SELECT 1 FROM t WHERE a = 1 LEFT JOIN u ON t.a = u.a WHERE u.b IS NULL"), conn=None, gold_rows=[(5,)])
+    assert v.outcome == "sql_error"
+    assert grade(q(), Prediction("sql", sql="DROP TABLE emp"), conn=None, gold_rows=[(5,)]).outcome == "unsafe"
+
+
 def test_a_real_second_statement_is_still_refused_even_with_a_comment():
     assert not check_select("SELECT 1; DROP TABLE emp; -- cleanup").ok
     assert not check_select("SELECT 1; SELECT 2 -- two selects").ok

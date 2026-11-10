@@ -4,7 +4,7 @@
 cd "$(dirname "$0")/.."
 WANT=11
 SET=${1:-core}
-SUFFIX=""; [ "$SET" = "hard" ] && SUFFIX="-hard"
+SUFFIX=""; [ "$SET" != "core" ] && SUFFIX="-$SET"
 while true; do
   ./venv/Scripts/python -u scripts/quant_sweep.py --model-prefix xiyansql-qwencoder-7b-2504 --family xiyan7b --set $SET
   n=$(./venv/Scripts/python -c "import json,pathlib;p=pathlib.Path('runs/xiyan7b${SUFFIX}-sweep.json');print(len(json.loads(p.read_text())) if p.exists() else 0)")

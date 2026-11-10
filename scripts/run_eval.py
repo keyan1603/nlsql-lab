@@ -41,7 +41,7 @@ def main() -> int:
     ap.add_argument("--schema", choices=["comments", "bare"], default="comments")
     ap.add_argument("--max-tokens", type=int, default=1024)
     ap.add_argument("--only", help="comma separated question ids")
-    ap.add_argument("--set", choices=["core", "hard"], default="core", help="core: the 55 questions on the 11 core tables (prompt p1); hard: the stress set on all 22 tables (prompt p2)")
+    ap.add_argument("--set", choices=["core", "hard", "hard2"], default="core", help="core: the 55 questions on the 11 core tables (prompt p1); hard and hard2: the two halves of the stress set on all 22 tables (prompt p2)")
     ap.add_argument("--regrade", action="store_true")
     ap.add_argument("--fresh", action="store_true", help="ignore saved outputs and ask every question again")
     args = ap.parse_args()
@@ -49,8 +49,8 @@ def main() -> int:
     RUNS.mkdir(exist_ok=True)
     out_path = RUNS / f"{args.label}.jsonl"
     saved = {} if args.fresh else load_records(out_path)
-    extended = args.set == "hard"
-    questions = load_questions(ROOT / "data" / ("questions_hard.json" if extended else "questions.json"))
+    extended = args.set in ("hard", "hard2")
+    questions = load_questions(ROOT / "data" / {"core": "questions.json", "hard": "questions_hard.json", "hard2": "questions_hard2.json"}[args.set])
     if args.only:
         wanted = set(args.only.split(","))
         questions = [q for q in questions if q.id in wanted]
@@ -97,7 +97,13 @@ def main() -> int:
                "latency_mean_s": round(statistics.mean(lat), 2), "latency_p95_s": round(sorted(lat)[int(0.95 * (len(lat) - 1))], 2),
                "format_followed": f"{followed}/{len(hows)}", "extraction": {h: hows.count(h) for h in sorted(set(hows))}, "tokens_out_total": tok, "tokens_out_per_s": round(tok / total_latency, 2) if total_latency else None,
                "by_category": {k: f"{sum(v)}/{len(v)}" for k, v in by_cat.items()}, "wall_s": round(time.perf_counter() - t_start, 1)}
-    (RUNS / f"{args.label}.summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    summary_path = RUNS / f"{args.label}.summary.json"
+    if summary_path.exists():                       # keep what the sweep measured (memory, estimate): a regrade must not erase it
+        old = json.loads(summary_path.read_text(encoding="utf-8"))
+        for key in ("gpu_peak_mib", "server_rss_peak_mib", "estimate_text", "sweep_wall_s"):
+            if key in old:
+                summary[key] = old[key]
+    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print()
     print(tabulate([[k, f"{sum(v)}/{len(v)}"] for k, v in by_cat.items()], headers=["category", "passed"], tablefmt="github"))
     print(f"\n{args.label}: execution accuracy {s['execution_accuracy']:.1%} ({s['correct']}/{s['answerable']} answerable), "

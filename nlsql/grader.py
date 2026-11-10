@@ -172,7 +172,8 @@ def grade(q: Question, pred: Prediction, conn=None, gold_rows: Optional[list] = 
         return Verdict(q.id, "no_sql")
     safe = check_select(pred.sql)
     if not safe.ok:
-        return Verdict(q.id, "unsafe", detail=safe.reason)
+        # text that is not valid MySQL is a syntax failure like any other; only valid-but-forbidden statements count as unsafe
+        return Verdict(q.id, "sql_error" if safe.kind == "syntax" else "unsafe", detail=safe.reason)
     if gold_rows is None:
         gold_rows = db.run_query(conn, q.gold_sql).rows
     try:

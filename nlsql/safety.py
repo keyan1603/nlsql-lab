@@ -18,32 +18,33 @@ FORBIDDEN_FUNCTIONS = {"SLEEP", "BENCHMARK", "LOAD_FILE", "GET_LOCK", "RELEASE_L
 class SafetyVerdict:
     ok: bool
     reason: str = ""
+    kind: str = ""          # "syntax" when the text is not valid MySQL at all, "policy" when it is valid but not allowed
 
 
 def check_select(sql: str) -> SafetyVerdict:
     text = (sql or "").strip().rstrip(";").strip()
     if not text:
-        return SafetyVerdict(False, "empty statement")
+        return SafetyVerdict(False, "empty statement", "syntax")
     try:
         statements = sqlglot.parse(text, read="mysql")
     except sqlglot.errors.ParseError as exc:
-        return SafetyVerdict(False, f"does not parse as MySQL: {str(exc)[:120]}")
+        return SafetyVerdict(False, f"does not parse as MySQL: {str(exc)[:120]}", "syntax")
     # a trailing comment after the semicolon parses as a comment-only 'statement' (exp.Semicolon); it executes nothing, so it is ignored
     statements = [s for s in statements if s is not None and not isinstance(s, exp.Semicolon)]
     if len(statements) != 1:
-        return SafetyVerdict(False, f"{len(statements)} statements; exactly one is allowed")
+        return SafetyVerdict(False, f"{len(statements)} statements; exactly one is allowed", "policy")
     tree = statements[0]
     # SELECT, and the set operations that combine SELECTs (UNION, INTERSECT, EXCEPT); all of them only read
     set_ops = tuple(getattr(exp, n) for n in ("SetOperation", "Union", "Intersect", "Except") if hasattr(exp, n))
     if not isinstance(tree, (exp.Select, exp.Subquery) + set_ops):
-        return SafetyVerdict(False, f"only SELECT is allowed, got {type(tree).__name__}")
+        return SafetyVerdict(False, f"only SELECT is allowed, got {type(tree).__name__}", "policy")
     for node in tree.walk():
         if isinstance(node, (exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create, exp.Alter, exp.Command, exp.Into)):
-            return SafetyVerdict(False, f"{type(node).__name__} is not allowed")
+            return SafetyVerdict(False, f"{type(node).__name__} is not allowed", "policy")
         if isinstance(node, exp.Lock):
-            return SafetyVerdict(False, "locking reads are not allowed")
+            return SafetyVerdict(False, "locking reads are not allowed", "policy")
         if isinstance(node, (exp.Anonymous, exp.Func)):
             name = (node.name or node.sql_name() or "").upper()
             if name in FORBIDDEN_FUNCTIONS:
-                return SafetyVerdict(False, f"function {name} is not allowed")
+                return SafetyVerdict(False, f"function {name} is not allowed", "policy")
     return SafetyVerdict(True)
