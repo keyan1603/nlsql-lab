@@ -65,6 +65,7 @@ def main() -> int:
     ap.add_argument("--gpu", default="0.55")
     ap.add_argument("--context", default="8192")
     ap.add_argument("--max-tokens", default="1024")
+    ap.add_argument("--set", choices=["core", "hard"], default="core", help="which question set to run")
     args = ap.parse_args()
 
     entries = model_entries(args.model_prefix)
@@ -77,14 +78,15 @@ def main() -> int:
     env = {"LMSTUDIO_BASE_URL": port_url or "http://127.0.0.1:1234/v1"}
     import os
     env = {**os.environ, **env}
-    table_path = RUNS / f"{args.family}-sweep.json"
+    suffix = "-hard" if args.set == "hard" else ""
+    table_path = RUNS / f"{args.family}{suffix}-sweep.json"
     table = json.loads(table_path.read_text()) if table_path.exists() else {}
 
     for quant in wanted:
         if quant not in entries:
             print(f"{quant}: not downloaded, skipping")
             continue
-        label = f"{args.family}-{quant.lower().replace('_', '')}"
+        label = f"{args.family}-{quant.lower().replace('_', '')}{suffix}"
         summary_file = RUNS / f"{label}.summary.json"
         if summary_file.exists():
             print(f"{quant}: already evaluated ({label}), skipping")
@@ -101,7 +103,7 @@ def main() -> int:
             t = threading.Thread(target=sample_memory, args=(stop, box), daemon=True)
             t.start()
             t0 = time.time()
-            subprocess.run([PY, "-u", str(ROOT / "scripts" / "run_eval.py"), "--model", ident, "--label", label, "--max-tokens", args.max_tokens], env=env)
+            subprocess.run([PY, "-u", str(ROOT / "scripts" / "run_eval.py"), "--model", ident, "--label", label, "--max-tokens", args.max_tokens, "--set", args.set], env=env)
             stop.set()
             t.join(timeout=10)
             lms("unload", ident)

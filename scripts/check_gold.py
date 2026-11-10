@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tabulate import tabulate                                # noqa: E402
 
 from nlsql import db                                         # noqa: E402
+from nlsql.config import ROOT                                # noqa: E402
 from nlsql.grader import compare_results                     # noqa: E402
 from nlsql.questions import load_questions, problems         # noqa: E402
 from nlsql.safety import check_select                        # noqa: E402
@@ -19,7 +20,8 @@ from nlsql.safety import check_select                        # noqa: E402
 
 def main() -> int:
     show = "--show" in sys.argv
-    questions = load_questions()
+    hard = "--set" in sys.argv and sys.argv[sys.argv.index("--set") + 1] == "hard"
+    questions = load_questions(ROOT / "data" / ("questions_hard.json" if hard else "questions.json"))
     bad = problems(questions)
     for p in bad:
         print("PROBLEM:", p)
@@ -48,7 +50,7 @@ def main() -> int:
             flags.append("NONDETERMINISTIC")
         if flags:
             failures += 1
-        preview = "; ".join(str(r) for r in first.rows[:2])[:60]
+        preview = "; ".join(str(r) for r in first.rows[:2])[:90]
         rows_out.append([q.id, q.category, q.difficulty, shape, preview if show or True else "", " ".join(flags)])
     print(tabulate(rows_out, headers=["id", "category", "level", "rows x cols", "first rows", "flags"], tablefmt="github"))
     print(f"\n{len(questions)} questions, {sum(1 for q in questions if q.expected == 'answer')} with gold queries, {failures} failing checks, {len(bad)} set problems")

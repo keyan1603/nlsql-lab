@@ -1,6 +1,7 @@
 """The prompt every model is given. One prompt for all models on purpose, so a score difference is a model difference.
 
 Model-specific templates (some specialists publish their own) are a separate experiment; this is the common baseline.
+p1 shows the 11 core tables; p2 shows all 22 (core plus extension) and is used for the hard question set.
 """
 
 from __future__ import annotations
@@ -22,9 +23,9 @@ Rules:
 """
 
 
-def system_prompt(include_comments: bool = True) -> str:
-    return f"{RULES}\nDatabase schema (MySQL):\n\n{schema_for_prompt(include_comments)}\n"
+def system_prompt(include_comments: bool = True, extended: bool = False) -> str:
+    return f"{RULES}\nDatabase schema (MySQL):\n\n{schema_for_prompt(include_comments, extended)}\n"
 
 
-def build_messages(question: str, include_comments: bool = True) -> list[dict]:
-    return [{"role": "system", "content": system_prompt(include_comments)}, {"role": "user", "content": question}]
+def build_messages(question: str, include_comments: bool = True, extended: bool = False) -> list[dict]:
+    return [{"role": "system", "content": system_prompt(include_comments, extended)}, {"role": "user", "content": question}]

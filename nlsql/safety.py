@@ -33,7 +33,9 @@ def check_select(sql: str) -> SafetyVerdict:
     if len(statements) != 1:
         return SafetyVerdict(False, f"{len(statements)} statements; exactly one is allowed")
     tree = statements[0]
-    if not isinstance(tree, (exp.Select, exp.Union, exp.Subquery)):
+    # SELECT, and the set operations that combine SELECTs (UNION, INTERSECT, EXCEPT); all of them only read
+    set_ops = tuple(getattr(exp, n) for n in ("SetOperation", "Union", "Intersect", "Except") if hasattr(exp, n))
+    if not isinstance(tree, (exp.Select, exp.Subquery) + set_ops):
         return SafetyVerdict(False, f"only SELECT is allowed, got {type(tree).__name__}")
     for node in tree.walk():
         if isinstance(node, (exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create, exp.Alter, exp.Command, exp.Into)):

@@ -41,6 +41,7 @@ def main() -> int:
     ap.add_argument("--schema", choices=["comments", "bare"], default="comments")
     ap.add_argument("--max-tokens", type=int, default=1024)
     ap.add_argument("--only", help="comma separated question ids")
+    ap.add_argument("--set", choices=["core", "hard"], default="core", help="core: the 55 questions on the 11 core tables (prompt p1); hard: the stress set on all 22 tables (prompt p2)")
     ap.add_argument("--regrade", action="store_true")
     ap.add_argument("--fresh", action="store_true", help="ignore saved outputs and ask every question again")
     args = ap.parse_args()
@@ -48,7 +49,8 @@ def main() -> int:
     RUNS.mkdir(exist_ok=True)
     out_path = RUNS / f"{args.label}.jsonl"
     saved = {} if args.fresh else load_records(out_path)
-    questions = load_questions()
+    extended = args.set == "hard"
+    questions = load_questions(ROOT / "data" / ("questions_hard.json" if extended else "questions.json"))
     if args.only:
         wanted = set(args.only.split(","))
         questions = [q for q in questions if q.id in wanted]
@@ -63,7 +65,7 @@ def main() -> int:
         if rec is None or (not args.regrade and rec.get("raw") is None):
             if args.regrade:
                 continue
-            c = llm.chat(args.model, build_messages(q.question, args.schema == "comments"), max_tokens=args.max_tokens)
+            c = llm.chat(args.model, build_messages(q.question, args.schema == "comments", extended), max_tokens=args.max_tokens)
             rec = {"qid": q.id, "raw": c.text, "latency_s": round(c.latency_s, 3), "tokens_in": c.tokens_in, "tokens_out": c.tokens_out,
                    "finish": c.finish_reason, "stats": c.stats}
         pred = extract(rec["raw"], rec["latency_s"], rec["tokens_in"], rec["tokens_out"])
@@ -90,7 +92,7 @@ def main() -> int:
     followed = sum(1 for h in hows if h == "fence")
     tok = sum(r["tokens_out"] for r in records)
     total_latency = sum(lat)
-    summary = {"label": args.label, "model": args.model, "schema": args.schema, "prompt_version": PROMPT_VERSION, "max_tokens": args.max_tokens,
+    summary = {"label": args.label, "model": args.model, "schema": args.schema, "prompt_version": "p2" if extended else PROMPT_VERSION, "question_set": args.set, "max_tokens": args.max_tokens,
                **s, "passed": sum(v.passed for v in verdicts), "of": len(verdicts),
                "latency_mean_s": round(statistics.mean(lat), 2), "latency_p95_s": round(sorted(lat)[int(0.95 * (len(lat) - 1))], 2),
                "format_followed": f"{followed}/{len(hows)}", "extraction": {h: hows.count(h) for h in sorted(set(hows))}, "tokens_out_total": tok, "tokens_out_per_s": round(tok / total_latency, 2) if total_latency else None,

@@ -1,4 +1,5 @@
-"""The schema as a model will read it. Two variants, because documentation is one of the things Phase 3 measures."""
+"""The schema as a model will read it. Two variants, because documentation is one of the things the lab measures, and two scopes:
+the 11 core tables, or the core plus the 11 extension tables (22 tables, a wider and more confusable schema)."""
 
 from __future__ import annotations
 
@@ -7,17 +8,19 @@ import re
 from nlsql.config import ROOT
 
 _COMMENT_COLUMN = re.compile(r"\s+COMMENT\s+'[^']*'")
-_COMMENT_TABLE = re.compile(r"\)\s*COMMENT\s*=\s*'[^']*';")
 
 
-def schema_ddl() -> str:
-    return (ROOT / "sql" / "schema.sql").read_text(encoding="utf-8")
+def schema_ddl(extended: bool = False) -> str:
+    text = (ROOT / "sql" / "schema.sql").read_text(encoding="utf-8")
+    if extended:
+        text += "\n" + (ROOT / "sql" / "schema_ext.sql").read_text(encoding="utf-8")
+    return text
 
 
-def schema_for_prompt(include_comments: bool = True) -> str:
+def schema_for_prompt(include_comments: bool = True, extended: bool = False) -> str:
     """CREATE TABLE statements only (no DROP, no file comments). With include_comments=False every COMMENT is removed,
     leaving just the bare, abbreviated names and types."""
-    text = schema_ddl()
+    text = schema_ddl(extended)
     statements = [s.strip() for s in ("\n".join(l for l in text.splitlines() if not l.strip().startswith("--")) + "\n").split(";\n")]
     creates = [s for s in statements if s.upper().startswith("CREATE TABLE")]
     out = []
