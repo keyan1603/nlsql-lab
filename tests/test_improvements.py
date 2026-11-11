@@ -196,7 +196,7 @@ def _words(text):
 
 
 def test_no_example_question_is_a_near_copy_of_an_evaluation_question():
-    eval_qs = [q.question for f in ("questions.json", "questions_hard.json", "questions_hard2.json") for q in load_questions(ROOT / "data" / f)]
+    eval_qs = [q.question for f in ("questions.json", "questions_hard.json", "questions_hard2.json", "questions_decline.json") for q in load_questions(ROOT / "data" / f)]
     for e in load_fewshot():
         a = _words(e["question"])
         worst = max(len(a & _words(q)) / len(a | _words(q)) for q in eval_qs)
@@ -206,7 +206,7 @@ def test_no_example_question_is_a_near_copy_of_an_evaluation_question():
 def test_no_example_query_equals_an_evaluation_gold_query():
     def norm(sql):
         return re.sub(r"\s+", " ", sql.lower()).strip().rstrip(";")
-    gold = {norm(q.gold_sql) for f in ("questions.json", "questions_hard.json", "questions_hard2.json") for q in load_questions(ROOT / "data" / f) if q.gold_sql}
+    gold = {norm(q.gold_sql) for f in ("questions.json", "questions_hard.json", "questions_hard2.json", "questions_decline.json") for q in load_questions(ROOT / "data" / f) if q.gold_sql}
     for e in load_fewshot():
         if e.get("sql"):
             assert norm(e["sql"]) not in gold, e["id"]

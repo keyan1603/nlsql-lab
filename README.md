@@ -149,3 +149,19 @@ On the 49 answerable core questions, which were never used to choose techniques:
 - **Declining did not improve.** Of the 6 core questions that should be declined or clarified, the plain prompt handled 1 and so did the stack; the pool is too small to test a fix, which is a reason to build a dedicated decline set before drawing conclusions.
 
 Two bugs were found on the way. Model output with an unterminated quote crashed the safety check (it now counts as an ordinary syntax failure, with tests), and a stray `-- comment` after the semicolon had earlier been counted as a second statement.
+
+## Does the model know when not to answer?
+
+The core set has only six questions that should be declined, too few to say anything. `data/questions_decline.json` adds 36 on the 22-table schema: 12 that the data cannot answer (DU), 12 too vague to answer without guessing (DM), and 12 answerable look-alike controls (DA) so that declining everything cannot score well. It was written after the improvement round and was not used to choose any technique. XiYanSQL 7B at Q4_K_M, greedy.
+
+| Configuration | Declined correctly (of 24) | Unanswerable (of 12) | Ambiguous (of 12) | Invented an answer | Controls correct (of 12) | Gains / losses vs plain | p |
+|---|---|---|---|---|---|---|---|
+| Plain prompt | 7 | 5 | 2 | 15 | 12 | ref | ref |
+| 5 tables + retry on error | 7 | 4 | 3 | 16 | 11 | 2 / 2 | 1.0 |
+| 3 worked examples (including two decline examples) | 18 | 9 | 9 | 4 | 10 | 11 / 0 | 0.001 |
+
+- Left alone, the model answers almost everything: it invented an answer to 15 of 24 questions it should have declined, for example an average salary by "job title" taken from the department column.
+- The worked examples are the one technique with a clear effect here: 11 more questions declined correctly and none lost (exact sign test p 0.001). They are also the only technique that contains decline examples, so this is what teaching the format would predict.
+- The price: 2 of the 12 controls broke (both SQL errors, one wrong result lost in the other stack), and on the stress set the same examples lowered SQL accuracy. A model that declines more also over-declines or mis-answers some answerable questions; 12 controls is a small sample, so treat 10 against 12 as a warning, not a measurement.
+- The stack chosen in the previous round does nothing for declining (2 gained, 2 lost).
+- Caveats: one model, one quantization, 24 should-decline questions, and the labels are my judgement of what is answerable. Per-question outputs are in `docs/results/models/imp-*-decline.jsonl`.

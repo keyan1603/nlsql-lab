@@ -66,7 +66,7 @@ def main() -> int:
     ap.add_argument("--context", default="8192")
     ap.add_argument("--max-tokens", default="1024")
     ap.add_argument("--tag", default="", help="suffix for a repeat run, for example -rep1, so the first run's saved answers are kept")
-    ap.add_argument("--set", choices=["core", "hard", "hard2"], default="core", help="which question set to run")
+    ap.add_argument("--set", choices=["core", "hard", "hard2", "decline"], default="core", help="which question set to run")
     args = ap.parse_args()
 
     entries = model_entries(args.model_prefix)
