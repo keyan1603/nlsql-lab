@@ -21,10 +21,15 @@ OUT = ROOT / "docs" / "results"
 FILE_GB = {"Q2_K": 3.016, "Q3_K_S": 3.492, "Q3_K_M": 3.808, "Q3_K_L": 4.088, "IQ4_XS": 4.250, "Q4_K_S": 4.458, "Q4_K_M": 4.683,
            "Q5_K_S": 5.315, "Q5_K_M": 5.445, "Q6_K": 6.254, "Q8_0": 8.099}
 ORDER = sorted(FILE_GB, key=FILE_GB.get)
+FAMILY = "xiyan7b"
+FAMILIES = {
+    "xiyan7b": ("XiYanSQL 7B", FILE_GB),
+    "qwen4b": ("Qwen3-4B-Instruct general model", {"Q2_K": 1.669, "Q3_K_S": 1.887, "Q3_K_M": 2.076, "Q4_K_M": 2.497, "Q6_K": 3.306, "Q8_0": 4.280}),
+}
 
 
 def label(quant: str, kind: str) -> str:
-    return f"xiyan7b-{quant.lower().replace('_', '')}" + ("" if kind == "core" else f"-{kind}")
+    return f"{FAMILY}-{quant.lower().replace('_', '')}" + ("" if kind == "core" else f"-{kind}")
 
 
 def load_kind(quant: str, kind: str) -> dict | None:
@@ -113,13 +118,13 @@ def categories(kind: str) -> dict:
 
 
 def markdown(results: list[dict]) -> str:
-    lines = ["# Quantization against difficulty: XiYanSQL-QwenCoder-7B-2504, eleven levels, two question sets", "",
+    lines = [f"# Quantization against difficulty: {FAMILIES[FAMILY][0]}, {len(ORDER)} levels", "",
              "Accuracy is the share of answerable questions whose query returned the right result. Intervals are Wilson 95 percent. "
              "Gains and losses are questions a level got right that Q8_0 got wrong, and the reverse; p is the exact two-sided sign test on those "
              "discordant questions (McNemar's exact test). A small p says the flips went one way more than chance would.", ""]
     for res in results:
         name = {"core": "Core set (49 answerable questions, 11 tables)", "hard": "Hard set, first half (72 questions, 22 tables)",
-                "hard2": "Hard set, second half (54 questions, 22 tables)", "hardall": "Hard set, both halves together (126 questions, six levels)"}[res["kind"]]
+                "hard2": "Hard set, second half (54 questions, 22 tables)", "hardall": "Hard set, both halves together (126 questions)"}[res["kind"]]
         lines += [f"## {name}", "", "| Level | File GB | Correct | Accuracy | 95% interval | SQL errors | Gains vs Q8_0 | Losses vs Q8_0 | Net | p (sign test) |", "|---|---|---|---|---|---|---|---|---|---|"]
         for q in reversed(ORDER):
             t = res["table"].get(q)
@@ -154,7 +159,7 @@ def chart(results: list[dict]) -> None:
         ax.fill_between(xs, lo, hi, color=colors[res["kind"]], alpha=0.12)
     ax.set_xlabel("Model file size (GB), left is smaller")
     ax.set_ylabel("Execution accuracy (%)")
-    ax.set_title("Accuracy against model size for XiYanSQL 7B, eleven quantizations")
+    ax.set_title(f"Accuracy against model size for {FAMILIES[FAMILY][0]}, {len(ORDER)} quantizations")
     ax.grid(alpha=0.3)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), frameon=False)
     ax.set_ylim(0, 100)
@@ -162,16 +167,22 @@ def chart(results: list[dict]) -> None:
         ax.annotate(q, (FILE_GB[q], 3), ha="center", fontsize=8, color="#555")
     fig.tight_layout()
     OUT.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT / "quant_curve.png")
+    fig.savefig(OUT / ("quant_curve.png" if FAMILY == "xiyan7b" else f"quant_curve_{FAMILY}.png"))
 
 
 def main() -> int:
+    global FAMILY, FILE_GB, ORDER
+    if len(sys.argv) > 1:
+        FAMILY = sys.argv[1]
+        FILE_GB = FAMILIES[FAMILY][1]
+        ORDER = sorted(FILE_GB, key=FILE_GB.get)
     results = [r for r in (analyse("core"), analyse("hard"), analyse("hard2"), analyse("hardall")) if r]
     if not results:
         print("no runs found")
         return 1
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "quant_analysis.md").write_text(markdown(results), encoding="utf-8")
+    suffix = "" if FAMILY == "xiyan7b" else f"_{FAMILY}"
+    (OUT / f"quant_analysis{suffix}.md").write_text(markdown(results), encoding="utf-8")
     chart(results)
     print(markdown(results))
     return 0

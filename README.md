@@ -103,5 +103,23 @@ The core questions above are easy enough that every level looked the same. A str
 (The first 72 hard questions were also run on all eleven levels; the extra 54 on the six shown. The first half alone gave the same picture: Q2_K 28 of 72 against 37 for Q8_0, p 0.093, with every other level between 34 and 42.)
 
 - **From 8-bit down to 3-bit the hard set shows no measurable loss.** Q6_K, Q5_K_M, Q4_K_M and Q3_K_M score within 3 questions of Q8_0, and every comparison has p above 0.5. A model file 53 percent smaller (Q3_K_M) answered the hard questions as well as the 8-bit one.
-- **At 2-bit the hard questions show a drop the easy ones hid.** On the core set Q2_K lost 2 of 49 (p 0.5, indistinguishable from noise). On the hard set it lost 12 points, 15 questions net (it got 25 right that Q8_0 got right and 10 that Q8_0 got wrong, p 0.017), and its invalid SQL rose from 21 to 31 answers. By category the damage is concentrated in correlated subqueries (3 of 14 against 8 of 14), window functions (2 against 5), questions with a definition in the text (2 against 5) and choosing the right table among look-alikes (11 against 14); pivots and joins held.
-- **Read the p value with care.** The 0.017 is for one comparison out of five made against Q8_0; corrected for five comparisons it is about 0.085, so the 2-bit drop is suggestive and consistent across both halves of the stress set, not proven. Only the one 7B model was swept, and the 7B model's output is not perfectly repeatable run to run (4 of 55 answers changed between two runs of the same file).
+- **At 2-bit the hard questions show a drop the easy ones hid.** On the core set Q2_K lost 2 of 49 (p 0.5, indistinguishable from noise). On the hard set it lost 12 points, 15 questions net (it missed 25 questions that Q8_0 got right and got 10 right that Q8_0 missed, p 0.017), and its invalid SQL rose from 21 to 31 answers. By category the damage is concentrated in correlated subqueries (3 of 14 against 8 of 14), window functions (2 against 5), questions with a definition in the text (2 against 5) and choosing the right table among look-alikes (11 against 14); pivots and joins held.
+- **Read the p value with care.** The 0.017 is for one comparison out of five made against Q8_0; corrected for five comparisons it is about 0.085, so the 2-bit drop is suggestive and consistent across both halves of the stress set, not proven. Only the one 7B model was swept for this table. Repeating the Q8_0 and Q2_K runs on the whole hard set gave the same 126 queries again for both files (`xiyan7b-*-rep1` in `docs/results/models/`), so the gap is not run-to-run noise; an earlier repeat on the core set had changed 4 of 55 answer texts, with the same pass or fail outcomes.
+
+### Do smaller models break sooner? The 4B model does
+
+The research the sweep was built on says smaller models are more fragile under compression. To test that, the same 126 hard questions were run on six levels of a 4B general model (Qwen3-4B-Instruct-2507, from the same publisher and recipe family as the 7B ladder; Q5_K_M did not finish downloading and is not included). Full tables are in `docs/results/quant_analysis_qwen4b.md` and `quant_curve_qwen4b.png`.
+
+| Level | File | Hard set, 126 questions | SQL errors | vs Q8_0 (gains, losses, p) |
+|---|---|---|---|---|
+| Q8_0 | 4.28 GB | 69 (54.8%) | 25 | reference |
+| Q6_K | 3.31 GB | 65 (51.6%) | 25 | 5, 9, p 0.42 |
+| Q4_K_M | 2.50 GB | 65 (51.6%) | 24 | 10, 14, p 0.54 |
+| Q3_K_M | 2.08 GB | 37 (29.4%) | 49 | 6, 38, p < 0.001 |
+| Q3_K_S | 1.89 GB | 53 (42.1%) | 35 | 17, 33, p 0.033 |
+| **Q2_K** | 1.67 GB | **1 (0.8%)** | 23 | 0, 68, p < 0.001 |
+
+- **The 4B model holds to 4-bit and then breaks one step earlier than the 7B.** The 7B model kept its score at 3-bit and slipped at 2-bit; the 4B model loses about 25 points at Q3_K_M and nearly everything at Q2_K.
+- **The 2-bit 4B model mostly stops answering.** On the first 72 questions it replied with the prompt's decline template (`-- UNANSWERABLE`) 56 times, including on questions the 8-bit file answered correctly. The raw outputs were checked; this is what the model wrote, not an extraction problem.
+- **The curve is not smooth.** Q3_K_S (42.1%) scored above Q3_K_M (29.4%) although it is smaller. Different quantization recipes damage different layers, so file size alone does not predict accuracy at low bit widths; test the exact file you intend to deploy.
+- Same caveats as before: one dataset, one author, 126 questions, and p values not corrected for the five comparisons per model (the two below 0.001 would survive that; 0.033 would not).

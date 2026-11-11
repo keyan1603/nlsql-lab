@@ -65,6 +65,7 @@ def main() -> int:
     ap.add_argument("--gpu", default="0.55")
     ap.add_argument("--context", default="8192")
     ap.add_argument("--max-tokens", default="1024")
+    ap.add_argument("--tag", default="", help="suffix for a repeat run, for example -rep1, so the first run's saved answers are kept")
     ap.add_argument("--set", choices=["core", "hard", "hard2"], default="core", help="which question set to run")
     args = ap.parse_args()
 
@@ -78,7 +79,7 @@ def main() -> int:
     env = {"LMSTUDIO_BASE_URL": port_url or "http://127.0.0.1:1234/v1"}
     import os
     env = {**os.environ, **env}
-    suffix = "" if args.set == "core" else f"-{args.set}"
+    suffix = ("" if args.set == "core" else f"-{args.set}") + args.tag
     table_path = RUNS / f"{args.family}{suffix}-sweep.json"
     table = json.loads(table_path.read_text()) if table_path.exists() else {}
 

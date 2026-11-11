@@ -1,4 +1,4 @@
-# Quantization against difficulty: XiYanSQL-QwenCoder-7B-2504, eleven levels, two question sets
+# Quantization against difficulty: XiYanSQL 7B, 11 levels
 
 Accuracy is the share of answerable questions whose query returned the right result. Intervals are Wilson 95 percent. Gains and losses are questions a level got right that Q8_0 got wrong, and the reverse; p is the exact two-sided sign test on those discordant questions (McNemar's exact test). A small p says the flips went one way more than chance would.
 
@@ -45,7 +45,7 @@ Accuracy is the share of answerable questions whose query returned the right res
 | Q3_K_M | 3.81 | 32/54 | 59.3% | 46 to 71% | 8 | 3 | 2 | +1 | 1.000 |
 | Q2_K | 3.02 | 25/54 | 46.3% | 34 to 59% | 10 | 3 | 9 | -6 | 0.146 |
 
-## Hard set, both halves together (126 questions, six levels)
+## Hard set, both halves together (126 questions)
 
 | Level | File GB | Correct | Accuracy | 95% interval | SQL errors | Gains vs Q8_0 | Losses vs Q8_0 | Net | p (sign test) |
 |---|---|---|---|---|---|---|---|---|---|
