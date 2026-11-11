@@ -123,3 +123,29 @@ The research the sweep was built on says smaller models are more fragile under c
 - **The 2-bit 4B model mostly stops answering.** On the first 72 questions it replied with the prompt's decline template (`-- UNANSWERABLE`) 56 times, including on questions the 8-bit file answered correctly. The raw outputs were checked; this is what the model wrote, not an extraction problem.
 - **The curve is not smooth.** Q3_K_S (42.1%) scored above Q3_K_M (29.4%) although it is smaller. Different quantization recipes damage different layers, so file size alone does not predict accuracy at low bit widths; test the exact file you intend to deploy.
 - Same caveats as before: one dataset, one author, 126 questions, and p values not corrected for the five comparisons per model (the two below 0.001 would survive that; 0.033 would not).
+
+### Can the answers be improved without changing the model?
+
+Phase 3 wrapped five techniques around XiYan 7B at Q4_K_M (the file most people would run: 4.7 GB) and measured each on the same 126 stress questions, against the plain prompt. The code is `nlsql/pipeline.py` and `nlsql/schema_link.py`; every technique is a flag of `scripts/run_eval.py`. None of them sees the gold query or the expected answer. Full table: `docs/results/improvements_hardall.md`.
+
+| Configuration | Correct (of 126) | SQL errors | Model calls | Mean s per question | vs plain (gains, losses, p) |
+|---|---|---|---|---|---|
+| Plain prompt | 71 (56.3%) | 17 | 126 | 17.0 | reference |
+| M-Schema layout with example values | 67 | 24 | 126 | 17.7 | 2, 6, p 0.29 |
+| 3 worked examples | 64 | 22 | 126 | 15.8 | 8, 15, p 0.21 |
+| Show only the 5 likeliest tables | 76 | 12 | 126 | 13.0 | 10, 5, p 0.30 |
+| Retry once or twice on a database error | 74 | 7 | 153 | 18.4 | 4, 1, p 0.38 |
+| Retry on error or on an empty result | 74 | 7 | 159 | 19.1 | 4, 1, p 0.38 |
+| **Stack: 5 tables + retry on error** | **77 (61.1%)** | 8 | 149 | 15.1 | 11, 5, p 0.21 |
+| Stack + vote over 5 sampled candidates | 78 (61.9%) | 2 | 737 | 70.4 | 11, 4, p 0.12 |
+
+On the 49 answerable core questions, which were never used to choose techniques: plain 42 (85.7%), stack 43 (87.8%), stack with voting 43.
+
+- **Nothing here is statistically significant.** The best single technique (showing fewer tables) gains 5 questions out of 126, p 0.30. The stack gains 6 with a smaller p of 0.21, and its direction holds on the core set, but it is a small plausible gain, not a proven one. The stack was chosen because pruning and retry both leaned positive and work through independent mechanisms; that choice was made after seeing the stress-set numbers, which is why the core set is the check.
+- **Two popular techniques made things worse.** The M-Schema layout and few-shot examples both lowered the score (-4 and -7) and raised SQL errors. A 7B model compressed to 4 bits seems to be distracted by a longer, busier prompt. The examples were written after the evaluation sets and checked mechanically against them (no question or query overlaps), so this is not a leak in either direction.
+- **Retry does what it is built to do, but less than it looks.** It cuts invalid queries from 17 to 7, yet only 3 of those became right answers; the others turned into queries that run and return the wrong thing. Retrying on an empty result added nothing.
+- **Showing fewer tables is the cheapest gain.** The lexical selector kept every table the gold query needs for 173 of 175 answerable questions (weights fixed in advance, never tuned), shortened the prompt and made answers faster (13 s against 17 s per question).
+- **Voting is not worth it here.** Five candidates per question cost 737 model calls instead of 149 and 70 seconds per question instead of 15, for one extra correct answer.
+- **Declining did not improve.** Of the 6 core questions that should be declined or clarified, the plain prompt handled 1 and so did the stack; the pool is too small to test a fix, which is a reason to build a dedicated decline set before drawing conclusions.
+
+Two bugs were found on the way. Model output with an unterminated quote crashed the safety check (it now counts as an ordinary syntax failure, with tests), and a stray `-- comment` after the semicolon had earlier been counted as a second statement.

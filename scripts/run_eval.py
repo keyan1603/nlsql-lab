@@ -18,11 +18,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tabulate import tabulate                                   # noqa: E402
 
-from nlsql import db, llm                                       # noqa: E402
+from nlsql import db                                       # noqa: E402
 from nlsql.config import ROOT                                   # noqa: E402
 from nlsql.extract import extract                               # noqa: E402
 from nlsql.grader import Prediction, grade, summarize, Verdict  # noqa: E402
-from nlsql.prompts import PROMPT_VERSION, build_messages        # noqa: E402
+from nlsql.pipeline import Options, solve                       # noqa: E402
+from nlsql.prompts import PROMPT_VERSION                        # noqa: E402
 from nlsql.questions import load_questions                      # noqa: E402
 
 RUNS = ROOT / "runs"
@@ -42,6 +43,12 @@ def main() -> int:
     ap.add_argument("--max-tokens", type=int, default=1024)
     ap.add_argument("--only", help="comma separated question ids")
     ap.add_argument("--set", choices=["core", "hard", "hard2"], default="core", help="core: the 55 questions on the 11 core tables (prompt p1); hard and hard2: the two halves of the stress set on all 22 tables (prompt p2)")
+    ap.add_argument("--prompt", choices=["plain", "mschema"], default="plain", help="mschema: columns with comments and example values, foreign keys listed")
+    ap.add_argument("--prune", type=int, default=0, help="show only the k most relevant tables (plus the tables they point at); 0 shows all")
+    ap.add_argument("--fewshot", type=int, default=0, help="number of worked examples placed before the question")
+    ap.add_argument("--retry", type=int, default=0, help="repair attempts after a database error")
+    ap.add_argument("--retry-empty", action="store_true", help="also retry when the query returns no rows")
+    ap.add_argument("--vote", type=int, default=1, help="candidates to sample; the most common result wins")
     ap.add_argument("--regrade", action="store_true")
     ap.add_argument("--fresh", action="store_true", help="ignore saved outputs and ask every question again")
     args = ap.parse_args()
@@ -50,6 +57,8 @@ def main() -> int:
     out_path = RUNS / f"{args.label}.jsonl"
     saved = {} if args.fresh else load_records(out_path)
     extended = args.set in ("hard", "hard2")
+    opts = Options(prompt=args.prompt, prune=args.prune, fewshot=args.fewshot, retry=args.retry, retry_empty=args.retry_empty, vote=args.vote,
+                   extended=extended, comments=args.schema == "comments")
     questions = load_questions(ROOT / "data" / {"core": "questions.json", "hard": "questions_hard.json", "hard2": "questions_hard2.json"}[args.set])
     if args.only:
         wanted = set(args.only.split(","))
@@ -65,9 +74,11 @@ def main() -> int:
         if rec is None or (not args.regrade and rec.get("raw") is None):
             if args.regrade:
                 continue
-            c = llm.chat(args.model, build_messages(q.question, args.schema == "comments", extended), max_tokens=args.max_tokens)
+            c = solve(args.model, q.question, opts, conn=reader, max_tokens=args.max_tokens)
             rec = {"qid": q.id, "raw": c.text, "latency_s": round(c.latency_s, 3), "tokens_in": c.tokens_in, "tokens_out": c.tokens_out,
-                   "finish": c.finish_reason, "stats": c.stats}
+                   "finish": c.finish, "stats": c.stats}
+            if not opts.baseline:
+                rec["pipeline"] = c.info
         pred = extract(rec["raw"], rec["latency_s"], rec["tokens_in"], rec["tokens_out"])
         if q.expected == "answer" and q.id not in gold_cache:
             gold_cache[q.id] = db.run_query(reader, q.gold_sql).rows
@@ -92,7 +103,7 @@ def main() -> int:
     followed = sum(1 for h in hows if h == "fence")
     tok = sum(r["tokens_out"] for r in records)
     total_latency = sum(lat)
-    summary = {"label": args.label, "model": args.model, "schema": args.schema, "prompt_version": "p2" if extended else PROMPT_VERSION, "question_set": args.set, "max_tokens": args.max_tokens,
+    summary = {"label": args.label, "model": args.model, "schema": args.schema, "prompt_version": "p2" if extended else PROMPT_VERSION, "question_set": args.set, "max_tokens": args.max_tokens, "pipeline": opts.tag(), "model_calls": sum((r.get("pipeline") or {}).get("calls", 1) for r in records),
                **s, "passed": sum(v.passed for v in verdicts), "of": len(verdicts),
                "latency_mean_s": round(statistics.mean(lat), 2), "latency_p95_s": round(sorted(lat)[int(0.95 * (len(lat) - 1))], 2),
                "format_followed": f"{followed}/{len(hows)}", "extraction": {h: hows.count(h) for h in sorted(set(hows))}, "tokens_out_total": tok, "tokens_out_per_s": round(tok / total_latency, 2) if total_latency else None,

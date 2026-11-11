@@ -27,7 +27,7 @@ def check_select(sql: str) -> SafetyVerdict:
         return SafetyVerdict(False, "empty statement", "syntax")
     try:
         statements = sqlglot.parse(text, read="mysql")
-    except sqlglot.errors.ParseError as exc:
+    except sqlglot.errors.SqlglotError as exc:            # ParseError, and TokenError for an unterminated quote or stray backtick
         return SafetyVerdict(False, f"does not parse as MySQL: {str(exc)[:120]}", "syntax")
     # a trailing comment after the semicolon parses as a comment-only 'statement' (exp.Semicolon); it executes nothing, so it is ignored
     statements = [s for s in statements if s is not None and not isinstance(s, exp.Semicolon)]

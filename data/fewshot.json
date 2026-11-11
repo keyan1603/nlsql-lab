@@ -1,0 +1,29 @@
+{
+ "note": "Worked examples for the few-shot prompt. Written after the evaluation sets and checked against them (tests/test_improvements.py): no example question is a near copy of an evaluation question, and no example query equals an evaluation gold query. Each answerable example runs on the lab database and returns rows.",
+ "examples": [
+  {"id": "F01", "question": "How many active customers are there in each loyalty tier? Show the tier name, not the code.",
+   "sql": "SELECT l.code_desc AS tier, COUNT(*) AS customers FROM cust_master c JOIN code_lookup l ON l.code_type = 'TIER' AND l.code_val = c.tier_cd WHERE c.is_actv = 1 GROUP BY l.code_desc"},
+  {"id": "F02", "question": "Rank the products inside each category by list price, highest first, and show the two most expensive products of every category that are still sold.",
+   "sql": "WITH r AS (SELECT categ_cd, prod_nm, list_prc, RANK() OVER (PARTITION BY categ_cd ORDER BY list_prc DESC) AS rk FROM prod_catalog WHERE disc_flag = 0) SELECT categ_cd, prod_nm, list_prc FROM r WHERE rk <= 2"},
+  {"id": "F03", "question": "Which support tickets took longer to close than the average closed ticket of the same severity?",
+   "sql": "SELECT t.tkt_id FROM support_tkt t WHERE t.closed_ts IS NOT NULL AND TIMESTAMPDIFF(HOUR, t.opened_ts, t.closed_ts) > (SELECT AVG(TIMESTAMPDIFF(HOUR, x.opened_ts, x.closed_ts)) FROM support_tkt x WHERE x.sev_lvl = t.sev_lvl AND x.closed_ts IS NOT NULL)"},
+  {"id": "F04", "question": "Which customers have never opened a support ticket?",
+   "sql": "SELECT c.cust_id, c.cust_nm FROM cust_master c WHERE NOT EXISTS (SELECT 1 FROM support_tkt t WHERE t.cust_id = c.cust_id)"},
+  {"id": "F05", "question": "What was the total settled payment amount in each month of 2025?",
+   "sql": "SELECT DATE_FORMAT(paid_ts, '%Y-%m') AS month, SUM(pay_amt) AS settled FROM payment WHERE pay_status = 'S' AND paid_ts >= '2025-01-01' AND paid_ts < '2026-01-01' GROUP BY DATE_FORMAT(paid_ts, '%Y-%m') ORDER BY month"},
+  {"id": "F06", "question": "For each warehouse, show how many restock movements and how many customer shipment movements it recorded.",
+   "sql": "SELECT wh_id, SUM(CASE WHEN mv_type = 'IN' THEN 1 ELSE 0 END) AS restocks, SUM(CASE WHEN mv_type = 'OUT' THEN 1 ELSE 0 END) AS shipments_out FROM inv_move GROUP BY wh_id"},
+  {"id": "F07", "question": "List every employee id that either approved a refund or is assigned to a support ticket.",
+   "sql": "SELECT approver_emp_id AS emp_id FROM refund_req WHERE approver_emp_id IS NOT NULL UNION SELECT assigned_emp_id FROM support_tkt WHERE assigned_emp_id IS NOT NULL"},
+  {"id": "F08", "question": "A 'late delivery' means more than 4 days between the ship date and the delivery date. How many late deliveries did each carrier have?",
+   "sql": "SELECT carrier_cd, COUNT(*) AS late_deliveries FROM shipment WHERE ship_status = 'D' AND DATEDIFF(deliv_dt, ship_dt) > 4 GROUP BY carrier_cd"},
+  {"id": "F09", "question": "How many add-to-cart events happened on the app channel in November 2025?",
+   "sql": "SELECT COUNT(*) AS cart_events FROM web_event WHERE evt_type = 'CART' AND channel_cd = 'APP' AND evt_ts >= '2025-11-01' AND evt_ts < '2025-12-01'"},
+  {"id": "F10", "question": "How many units were ordered in each product category on orders that were delivered?",
+   "sql": "SELECT p.categ_cd, SUM(l.qty) AS units FROM ord_line l JOIN ord_hdr h ON h.ord_id = l.ord_id JOIN prod_catalog p ON p.sku = l.sku WHERE h.ord_status = 'D' GROUP BY p.categ_cd"},
+  {"id": "F11", "question": "How many orders has each customer in the EU region placed, including customers with no orders?",
+   "sql": "SELECT c.cust_id, COUNT(h.ord_id) AS orders FROM cust_master c LEFT JOIN ord_hdr h ON h.cust_id = c.cust_id WHERE c.region_cd = 'EU' GROUP BY c.cust_id"},
+  {"id": "F12", "question": "What is the customer satisfaction score of each region?", "decline": "-- UNANSWERABLE: the schema holds no satisfaction scores or survey data"},
+  {"id": "F13", "question": "Which warehouse is doing the worst job?", "decline": "-- CLARIFY: What should 'worst' be measured by (fewest shipments out, most stock below the reorder point, or something else)?"}
+ ]
+}
