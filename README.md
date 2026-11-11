@@ -162,6 +162,6 @@ The core set has only six questions that should be declined, too few to say anyt
 
 - Left alone, the model answers almost everything: it invented an answer to 15 of 24 questions it should have declined, for example an average salary by "job title" taken from the department column.
 - The worked examples are the one technique with a clear effect here: 11 more questions declined correctly and none lost (exact sign test p 0.001). They are also the only technique that contains decline examples, so this is what teaching the format would predict.
-- The price: 2 of the 12 controls broke (both SQL errors, one wrong result lost in the other stack), and on the stress set the same examples lowered SQL accuracy. A model that declines more also over-declines or mis-answers some answerable questions; 12 controls is a small sample, so treat 10 against 12 as a warning, not a measurement.
+- The price: 2 of the 12 controls broke (both became SQL errors), and on the stress set the same examples lowered SQL accuracy. A model that declines more also over-declines or mis-answers some answerable questions; 12 controls is a small sample, so treat 10 against 12 as a warning, not a measurement.
 - The stack chosen in the previous round does nothing for declining (2 gained, 2 lost).
 - Caveats: one model, one quantization, 24 should-decline questions, and the labels are my judgement of what is answerable. Per-question outputs are in `docs/results/models/imp-*-decline.jsonl`.
