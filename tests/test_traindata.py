@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nlsql.prompts import TUNED_SYSTEM, build_tuned_messages
+from nlsql.prompts import TUNED_RULES, build_tuned_messages, tuned_system
 from nlsql.traindata import LeakFilter, canonical_sql, chat_example, jaccard, norm_question, parse_json_array, question_tokens, sql_reply
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -49,10 +49,16 @@ def test_the_training_target_has_exactly_the_shape_rule_one_asks_for():
     assert [m["role"] for m in ex["messages"]] == ["system", "user", "assistant"]
 
 
-def test_the_compact_prompt_carries_no_schema_but_keeps_the_decline_rules():
-    m = build_tuned_messages("Q")
-    assert "CREATE TABLE" not in TUNED_SYSTEM and len(TUNED_SYSTEM) < 1500
-    assert "UNANSWERABLE" in TUNED_SYSTEM and "CLARIFY" in TUNED_SYSTEM and m[-1] == {"role": "user", "content": "Q"}
+def test_the_compact_prompt_carries_only_the_likely_tables_and_keeps_the_decline_rules():
+    m = build_tuned_messages("How many active customers are in the Platinum tier?")
+    system = m[0]["content"]
+    assert "CREATE TABLE" not in system and "cust_master" in system and len(system) < 6000        # not the 13,500 characters of all 22 tables
+    assert "UNANSWERABLE" in TUNED_RULES and "CLARIFY" in TUNED_RULES and m[-1]["role"] == "user"
+
+
+def test_extra_tables_are_shown_and_the_order_is_the_schema_order_not_the_order_given():
+    s = tuned_system("How many active customers are in the Platinum tier?", ("supplier", "emp"))
+    assert "supplier - " in s and "emp - " in s and s.index("emp - ") < s.index("cust_master - ")
 
 
 def test_no_real_training_pair_is_a_test_question():

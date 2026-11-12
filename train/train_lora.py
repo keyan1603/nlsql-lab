@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 
 import torch
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,13 +38,22 @@ def encode(tok, messages: list[dict], max_len: int):
     return f_ids, labels
 
 
-def batches(examples, micro, rng, shuffle=True):
+def batches(examples, micro, rng, shuffle=True, budget=700):
     idx = list(range(len(examples)))
     if shuffle:
         rng.shuffle(idx)
         # bucket by length inside windows of 64 so padding stays small, then shuffle the buckets
         chunks = [sorted(idx[i:i + 64], key=lambda j: len(examples[j][0])) for i in range(0, len(idx), 64)]
-        groups = [c[i:i + micro] for c in chunks for i in range(0, len(c), micro)]
+        groups = []
+        for c in chunks:                              # fill a micro-batch until it holds `micro` examples or the padded size reaches the token budget
+            cur = []
+            for j in c:
+                if cur and (len(cur) >= micro or len(examples[j][0]) * (len(cur) + 1) > budget):
+                    groups.append(cur)
+                    cur = []
+                cur.append(j)
+            if cur:
+                groups.append(cur)
         rng.shuffle(groups)
     else:
         groups = [idx[i:i + micro] for i in range(0, len(idx), micro)]
@@ -59,14 +68,24 @@ def batches(examples, micro, rng, shuffle=True):
         yield ids, lab, att
 
 
+def reply_loss(model, ids, lab, att):
+    """Cross-entropy on the reply tokens only. The 152k-word output layer is applied to those positions alone, not to the whole prompt,
+    which is what keeps a 1,000-token example inside 4 GB."""
+    inner = model.base_model.model                       # PeftModel -> LoraModel -> the causal LM
+    hidden = inner.model(input_ids=ids, attention_mask=att).last_hidden_state[:, :-1]
+    target = lab[:, 1:]
+    keep = target != -100
+    logits = inner.lm_head(hidden[keep])
+    return torch.nn.functional.cross_entropy(logits.float(), target[keep]), int(keep.sum())
+
+
 @torch.no_grad()
 def evaluate(model, examples, micro, device):
     model.eval()
     tot, n = 0.0, 0
     for ids, lab, att in batches(examples, micro, None, shuffle=False):
-        out = model(input_ids=ids.to(device), attention_mask=att.to(device), labels=lab.to(device))
-        k = int((lab[:, 1:] != -100).sum())
-        tot += out.loss.item() * k
+        loss, k = reply_loss(model, ids.to(device), lab.to(device), att.to(device))
+        tot += loss.item() * k
         n += k
     model.train()
     return tot / max(n, 1)
@@ -79,12 +98,14 @@ def main() -> None:
     ap.add_argument("--val", default=str(ROOT / "train" / "data" / "val.jsonl"))
     ap.add_argument("--out", default=str(ROOT / "train" / "out" / "run1"))
     ap.add_argument("--epochs", type=int, default=3)
-    ap.add_argument("--micro", type=int, default=4)
-    ap.add_argument("--accum", type=int, default=4)
+    ap.add_argument("--micro", type=int, default=2)
+    ap.add_argument("--accum", type=int, default=8)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--rank", type=int, default=32)
-    ap.add_argument("--max-len", type=int, default=1024)
+    ap.add_argument("--tok-budget", type=int, default=1700, help="most padded tokens in one micro-batch; the 4 GB card fails above about 500")
+    ap.add_argument("--max-len", type=int, default=1100)
     ap.add_argument("--limit", type=int, default=0, help="train on the first N examples only (smoke test)")
+    ap.add_argument("--init", default="", help="adapter directory to continue from")
     ap.add_argument("--seed", type=int, default=11)
     a = ap.parse_args()
 
@@ -104,13 +125,18 @@ def main() -> None:
 
     bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16)
     model = AutoModelForCausalLM.from_pretrained(a.base, quantization_config=bnb, torch_dtype=torch.bfloat16, device_map={"": 0})
-    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-    model = get_peft_model(model, LoraConfig(r=a.rank, lora_alpha=2 * a.rank, lora_dropout=0.05, task_type="CAUSAL_LM",
+    # not prepare_model_for_kbit_training: it casts the 151k-word embedding matrix to fp32 (about 1 GB), which a 4 GB card cannot spare
+    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    model.enable_input_require_grads()
+    if a.init:
+        model = PeftModel.from_pretrained(model, a.init, is_trainable=True)          # continue training an earlier adapter
+    else:
+        model = get_peft_model(model, LoraConfig(r=a.rank, lora_alpha=2 * a.rank, lora_dropout=0.05, task_type="CAUSAL_LM",
                                              target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]))
     model.print_trainable_parameters()
     params = [p for p in model.parameters() if p.requires_grad]
     opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=0.0, betas=(0.9, 0.99))
-    steps_per_epoch = math.ceil(len(train) / (a.micro * a.accum))
+    steps_per_epoch = max(sum(1 for _ in batches(train, a.micro, random.Random(0), budget=a.tok_budget)) // a.accum, 1)    # micro-batches are token-budgeted, so count them
     total = steps_per_epoch * a.epochs
     warm = max(int(0.04 * total), 3)
     lr_at = lambda s: a.lr * (s + 1) / warm if s < warm else a.lr * (0.1 + 0.9 * 0.5 * (1 + math.cos(math.pi * (s - warm) / max(total - warm, 1))))
@@ -121,10 +147,10 @@ def main() -> None:
     for epoch in range(a.epochs):
         micro_i, run_loss, run_n = 0, 0.0, 0
         opt.zero_grad(set_to_none=True)
-        for ids, lab, att in batches(train, a.micro, rng):
-            out_ = model(input_ids=ids.to(device), attention_mask=att.to(device), labels=lab.to(device))
-            (out_.loss / a.accum).backward()
-            run_loss, run_n, micro_i = run_loss + out_.loss.item(), run_n + 1, micro_i + 1
+        for ids, lab, att in batches(train, a.micro, rng, budget=a.tok_budget):
+            loss, _ = reply_loss(model, ids.to(device), lab.to(device), att.to(device))
+            (loss / a.accum).backward()
+            run_loss, run_n, micro_i = run_loss + loss.item(), run_n + 1, micro_i + 1
             if micro_i % a.accum == 0:
                 torch.nn.utils.clip_grad_norm_(params, 1.0)
                 for g in opt.param_groups:

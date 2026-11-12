@@ -27,7 +27,7 @@ from nlsql import db, llm_gemini                            # noqa: E402
 from nlsql.config import AS_OF_DATE, ROOT                   # noqa: E402
 from nlsql.grader import compare_results                    # noqa: E402
 from nlsql.llm import LLMUnavailable                        # noqa: E402
-from nlsql.prompts import TUNED_SYSTEM, system_prompt       # noqa: E402
+from nlsql.prompts import system_prompt, tuned_system       # noqa: E402
 from nlsql.safety import check_select                       # noqa: E402
 from nlsql.schema_link import m_schema, parse_schema        # noqa: E402
 from nlsql.traindata import LeakFilter, canonical_sql, chat_example, norm_question, parse_json_array, sql_reply  # noqa: E402
@@ -116,7 +116,9 @@ def answer_prompt(items: list[dict]) -> list[dict]:
     qs = "\n".join(json.dumps({"id": i["id"], "question": i["question"]}) for i in items)
     user = (f"Answer each of the following {len(items)} questions independently, following the rules above. "
             'Reply with ONLY a JSON array of objects {"id": <the id>, "reply": "<exactly what the rules ask a reply to be: the SQL statement without a code fence, or the one -- UNANSWERABLE / -- CLARIFY line>"}.\n\n' + qs)
-    return [{"role": "system", "content": system_prompt(True, True)}, {"role": "user", "content": user}]
+    override = ("\n\nIMPORTANT for this task only: you are given SEVERAL questions at once. Ignore the instruction to reply with a single statement; "
+                "answer every question and reply with the JSON array described by the user, containing one object per question.")
+    return [{"role": "system", "content": system_prompt(True, True) + override}, {"role": "user", "content": user}]
 
 
 # ---------------------------------------------------------------------------------------------------- helpers
@@ -135,6 +137,13 @@ def tests_for_leaks() -> list[dict]:
         d = json.loads((ROOT / "data" / f"{f}.json").read_text(encoding="utf-8"))
         out += d if isinstance(d, list) else d["questions"]
     return out
+
+
+def tables_of(sql):
+    """Names of the tables a query reads, so the training prompt is sure to show them."""
+    import sqlglot
+    from sqlglot import exp
+    return tuple(sorted({t.name for t in sqlglot.parse_one(sql, read="mysql").find_all(exp.Table)})) if sql else ()
 
 
 def run_sql(conn, sql: str):
@@ -244,7 +253,7 @@ def cmd_verify(_a) -> None:
 
 def cmd_answer(a) -> None:
     cands = jl_read(DATA / "candidates.jsonl")
-    done = {i["id"] for r in jl_read(DATA / "blind_raw.jsonl") for i in r["items"]}
+    done = {i["id"] for r in jl_read(DATA / "blind_raw.jsonl") for i in r["items"] if i["reply"]}   # empty replies (a batch the teacher answered in the wrong format) are asked again
     todo = [c for c in cands if c["id"] not in done]
     sent = 0
     for k in range(0, len(todo), PER_REQUEST):
@@ -307,11 +316,19 @@ def cmd_build(a) -> None:
     rng.shuffle(kept)
     n_val = max(int(len(kept) * 0.06), 20)
     val, train = kept[:n_val], kept[n_val:]
+    caps = {k: int(v) for k, v in (x.split("=") for x in a.cap.split(",") if x)}
+    seen_n: Counter = Counter()
+    capped = []
+    for r in train:                                  # the validation split is left alone; only training volume is trimmed, easy and decline kinds first
+        seen_n[r["technique"]] += 1
+        if seen_n[r["technique"]] <= caps.get(r["technique"], 10**9):
+            capped.append(r)
+    train = capped
     for name, rows in (("train", train), ("val", val)):
         text = ""
         for r in rows:
             reply = sql_reply(r["sql"]) if r["kind"] == "sql" else r["reply"]
-            text += json.dumps({**chat_example(TUNED_SYSTEM, r["question"], reply), "id": r["id"], "technique": r["technique"], "kind": r["kind"]}, ensure_ascii=False) + "\n"
+            text += json.dumps({**chat_example(tuned_system(r["question"], tables_of(r.get("sql"))), r["question"], reply), "id": r["id"], "technique": r["technique"], "kind": r["kind"]}, ensure_ascii=False) + "\n"
         (DATA / f"{name}.jsonl").write_text(text, encoding="utf-8")
     by = Counter(r["technique"] for r in train)
     print(dict(stats), "\ntrain", len(train), "val", len(val), "\nby technique", dict(by))
@@ -330,6 +347,7 @@ def main() -> int:
     an = sub.add_parser("answer")
     an.add_argument("--max-requests", type=int, default=40)
     b = sub.add_parser("build")
+    b.add_argument("--cap", default="", help="technique=max,... keeps at most that many training pairs of a technique (training time is the limit on a 4 GB laptop GPU)")
     b.add_argument("--threshold", type=float, default=0.6, help="question word overlap (Jaccard) at or above which a pair counts as a test look-alike")
     a = ap.parse_args()
     DATA.mkdir(parents=True, exist_ok=True)

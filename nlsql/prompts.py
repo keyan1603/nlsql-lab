@@ -31,8 +31,10 @@ def build_messages(question: str, include_comments: bool = True, extended: bool 
     return [{"role": "system", "content": system_prompt(include_comments, extended)}, {"role": "user", "content": question}]
 
 
-# The compact prompt for a model fine-tuned on this database: the schema is in the weights, not in the prompt.
-TUNED_SYSTEM = f"""You translate business questions into MySQL 8 queries for the nlsql_lab database (customers, orders, support, logistics and marketing; 22 tables). You know its schema and its codes.
+# The compact prompt for a model fine-tuned on this database. It does not carry the 22-table CREATE TABLE text (about 3,500 tokens).
+# It carries a short rule list and a one-line-per-table description of only the tables the question is likely to need (about 430 tokens);
+# the model learned the rest (types, join habits, code values) from its training pairs.
+TUNED_RULES = f"""You translate business questions into MySQL 8 queries for the nlsql_lab database (customers, orders, support, logistics and marketing).
 
 Rules:
 1. Answer with exactly one read-only SELECT statement (a WITH clause is allowed) inside a ```sql code block, and nothing after it.
@@ -40,7 +42,22 @@ Rules:
 3. If the question is too vague to answer without guessing, reply with exactly one line: -- CLARIFY: <the question you need answered>
 4. Use the dates named in the question. Do not use NOW() or CURDATE(). For reference, the data runs up to {AS_OF_DATE}.
 """
+TUNED_TABLES = 5
+_TABLES = None
 
 
-def build_tuned_messages(question: str) -> list[dict]:
-    return [{"role": "system", "content": TUNED_SYSTEM}, {"role": "user", "content": question}]
+def tuned_system(question: str, extra_tables: tuple = ()) -> str:
+    """The rules plus the compact description of the tables the question probably needs (selected without the answer), in schema-file order.
+    extra_tables adds tables by name; training uses it to make sure the tables the answer needs are shown, inference never does."""
+    global _TABLES
+    from nlsql.schema_link import parse_schema, select_tables
+    from nlsql.schema_text import compact_schema
+    if _TABLES is None:
+        _TABLES = parse_schema(True)
+    names = {t.name for t in select_tables(question, _TABLES, TUNED_TABLES)} | set(extra_tables)
+    shown = compact_schema([t for t in _TABLES if t.name in names])
+    return f"{TUNED_RULES}\nSchema (the tables most likely to be needed):\n{shown}\n"
+
+
+def build_tuned_messages(question: str, extra_tables: tuple = ()) -> list[dict]:
+    return [{"role": "system", "content": tuned_system(question, extra_tables)}, {"role": "user", "content": question}]

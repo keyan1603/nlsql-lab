@@ -1,0 +1,3 @@
+```sql
+SELECT signup_dt, region_cd FROM cust_master WHERE cust_id = 'C-1002';
+```

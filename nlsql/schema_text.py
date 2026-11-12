@@ -30,3 +30,15 @@ def schema_for_prompt(include_comments: bool = True, extended: bool = False) -> 
             stmt = re.sub(r"\)\s*COMMENT\s*=\s*'[^']*'\s*$", ")", stmt)
         out.append(stmt + ";")
     return "\n\n".join(out)
+
+
+def compact_schema(tables) -> str:
+    """One line per table: name, what it is, and every column with its comment. No types, keys or example values. This is the schema as the
+    fine-tuned model reads it (the model learned the types and the join habits from its training pairs); about a third of the size of the
+    CREATE TABLE text."""
+    lines = []
+    for t in tables:
+        cols = "; ".join(c.name + (f" ({c.comment})" if c.comment else "") for c in t.columns)
+        fk = ("  FK: " + ", ".join(f"{c}->{rt}.{rc}" for c, rt, rc in t.fks)) if t.fks else ""
+        lines.append(f"{t.name} - {t.comment}: {cols}{fk}")
+    return "\n".join(lines)
