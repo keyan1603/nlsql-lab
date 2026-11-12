@@ -50,8 +50,13 @@ def test_the_full_guard_stops_every_harmful_statement_on_the_real_database(reade
 @pytest.mark.integration
 def test_the_versioned_comment_leak_is_closed_end_to_end(reader, tmp_path):
     sql = "SELECT 1 /*!50000 UNION SELECT salary_amt FROM emp */"
-    assert db.run_query(reader, sql).rows[1:], "the unguarded database really does run the hidden UNION"
-    assert Guard(Policy(), audit_path=tmp_path / "a.jsonl").execute(reader, "q", sql).decision == "refused"
+    try:
+        leaked = bool(db.run_query(reader, sql).rows[1:])          # account with SELECT on the whole database: the hidden UNION runs
+    except Exception as exc:
+        assert "denied" in str(exc).lower()                         # account narrowed by setup/least_privilege.sql: MySQL itself refuses
+        leaked = False
+    r = Guard(Policy(), audit_path=tmp_path / "a.jsonl").execute(reader, "q", sql)
+    assert r.decision == "refused" and r.layer == "text"
 
 
 @pytest.mark.integration

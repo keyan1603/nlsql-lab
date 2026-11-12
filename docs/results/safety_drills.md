@@ -39,3 +39,20 @@ Cells are attacks that got through. Harmless statements that must keep working (
 ## Cost of the controls
 
 See `guard_fidelity.md`: 186 of 187 answerable gold queries return identical results through the guard; the other (L01, an email lookup) returns the email masked.
+
+## After the reader was narrowed (setup/least_privilege.sql applied)
+
+The same 66 attacks, re-run after column-level grants removed `salary_amt` and `natl_id` from the reader. Cells are attacks that got through.
+
+| Category | Attacks | Parser alone | Database alone | Both | Guard |
+|---|---|---|---|---|---|
+| write | 24 | 0 | 4 | 0 | 0 |
+| stacking | 7 | 3 | 1 | 1 | 0 |
+| resource | 7 | 4 | 2 | 0 | 0 |
+| disclosure | 14 | 9 | 10 | 6 | 0 |
+| personal | 14 | 14 | 4 | 4 | 0 |
+| **all** | 66 | 30 | 21 | 11 | 0 |
+
+- The database alone went from 34 to 21 and parser plus database from 22 to 11. The versioned-comment UNION (STA04) is now refused by MySQL itself ("SELECT command denied ... for column 'salary_amt'"), as is every direct, star, subquery and aggregate attack on the two blocked columns.
+- What is left in the database-only column is by design: the four personal attacks are all on `email_addr` and `phone_no`, which the account must still read raw because the guard masks them in the query it sends. The rest is server information (version, user, `information_schema`) and the non-SELECT statements listed above.
+- The guard result does not change (0), and the 186 of 187 gold queries still match (`guard_fidelity.md`). The full suite passes (303), including the two least-privilege tests that were skipped before.
