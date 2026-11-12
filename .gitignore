@@ -6,3 +6,7 @@ __pycache__/
 .pytest_cache/
 runs/
 models/
+venv-train/
+train/base/
+train/out/
+train/*.log

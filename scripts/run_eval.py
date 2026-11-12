@@ -43,7 +43,7 @@ def main() -> int:
     ap.add_argument("--max-tokens", type=int, default=1024)
     ap.add_argument("--only", help="comma separated question ids")
     ap.add_argument("--set", choices=["core", "hard", "hard2", "decline"], default="core", help="core: the 55 questions on the 11 core tables (prompt p1); hard and hard2: the two halves of the stress set on all 22 tables (prompt p2)")
-    ap.add_argument("--prompt", choices=["plain", "mschema"], default="plain", help="mschema: columns with comments and example values, foreign keys listed")
+    ap.add_argument("--prompt", choices=["plain", "mschema", "tuned"], default="plain", help="mschema: columns with comments and example values, foreign keys listed; tuned: the compact prompt for a fine-tuned model (no schema in the prompt)")
     ap.add_argument("--prune", type=int, default=0, help="show only the k most relevant tables (plus the tables they point at); 0 shows all")
     ap.add_argument("--fewshot", type=int, default=0, help="number of worked examples placed before the question")
     ap.add_argument("--retry", type=int, default=0, help="repair attempts after a database error")

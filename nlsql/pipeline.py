@@ -27,7 +27,7 @@ from nlsql import db, llm
 from nlsql.config import ROOT
 from nlsql.extract import extract
 from nlsql.grader import norm
-from nlsql.prompts import RULES, build_messages
+from nlsql.prompts import RULES, build_messages, build_tuned_messages
 from nlsql.safety import check_select
 from nlsql.schema_link import m_schema, parse_schema, select_tables, tokens
 from nlsql.schema_text import schema_for_prompt
@@ -38,7 +38,7 @@ SAMPLE_TEMPERATURE = 0.7
 
 @dataclass
 class Options:
-    prompt: str = "plain"          # plain | mschema
+    prompt: str = "plain"          # plain | mschema | tuned (compact prompt, for a model that has the schema in its weights)
     prune: int = 0                 # 0 keeps every table
     fewshot: int = 0
     retry: int = 0                 # extra attempts after a database error
@@ -106,6 +106,8 @@ def _ddl_subset(names: set, include_comments: bool, extended: bool) -> str:
 
 def build(question: str, opts: Options) -> tuple[list[dict], dict]:
     """The messages for one question and a record of what was shown."""
+    if opts.prompt == "tuned":
+        return build_tuned_messages(question), {"tables": "in the weights", "fewshot": []}
     if opts.baseline:
         return build_messages(question, opts.comments, opts.extended), {"tables": "all", "fewshot": []}
     tables = parse_schema(opts.extended)

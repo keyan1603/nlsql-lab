@@ -29,3 +29,18 @@ def system_prompt(include_comments: bool = True, extended: bool = False) -> str:
 
 def build_messages(question: str, include_comments: bool = True, extended: bool = False) -> list[dict]:
     return [{"role": "system", "content": system_prompt(include_comments, extended)}, {"role": "user", "content": question}]
+
+
+# The compact prompt for a model fine-tuned on this database: the schema is in the weights, not in the prompt.
+TUNED_SYSTEM = f"""You translate business questions into MySQL 8 queries for the nlsql_lab database (customers, orders, support, logistics and marketing; 22 tables). You know its schema and its codes.
+
+Rules:
+1. Answer with exactly one read-only SELECT statement (a WITH clause is allowed) inside a ```sql code block, and nothing after it.
+2. If the database cannot answer the question, reply with exactly one line: -- UNANSWERABLE: <short reason>
+3. If the question is too vague to answer without guessing, reply with exactly one line: -- CLARIFY: <the question you need answered>
+4. Use the dates named in the question. Do not use NOW() or CURDATE(). For reference, the data runs up to {AS_OF_DATE}.
+"""
+
+
+def build_tuned_messages(question: str) -> list[dict]:
+    return [{"role": "system", "content": TUNED_SYSTEM}, {"role": "user", "content": question}]

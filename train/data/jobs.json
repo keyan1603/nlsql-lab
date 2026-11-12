@@ -1,0 +1,812 @@
+[
+ {
+  "id": "lookup_filter.orders",
+  "kind": "sql",
+  "technique": "lookup_filter",
+  "technique_desc": "single-table lookups and filters: one row by id, rows by status or tier code, date ranges, NULL checks, soft-deleted (inactive) rows, discontinued products",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "lookup_filter.support",
+  "kind": "sql",
+  "technique": "lookup_filter",
+  "technique_desc": "single-table lookups and filters: one row by id, rows by status or tier code, date ranges, NULL checks, soft-deleted (inactive) rows, discontinued products",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "lookup_filter.logistics",
+  "kind": "sql",
+  "technique": "lookup_filter",
+  "technique_desc": "single-table lookups and filters: one row by id, rows by status or tier code, date ranges, NULL checks, soft-deleted (inactive) rows, discontinued products",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "lookup_filter.marketing",
+  "kind": "sql",
+  "technique": "lookup_filter",
+  "technique_desc": "single-table lookups and filters: one row by id, rows by status or tier code, date ranges, NULL checks, soft-deleted (inactive) rows, discontinued products",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "lookup_filter.supply",
+  "kind": "sql",
+  "technique": "lookup_filter",
+  "technique_desc": "single-table lookups and filters: one row by id, rows by status or tier code, date ranges, NULL checks, soft-deleted (inactive) rows, discontinued products",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "aggregate.orders",
+  "kind": "sql",
+  "technique": "aggregate",
+  "technique_desc": "GROUP BY with COUNT, SUM, AVG, MIN, MAX, HAVING, ORDER BY with LIMIT (always add a tie-breaker to the ORDER BY), COUNT(DISTINCT ...)",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "aggregate.support",
+  "kind": "sql",
+  "technique": "aggregate",
+  "technique_desc": "GROUP BY with COUNT, SUM, AVG, MIN, MAX, HAVING, ORDER BY with LIMIT (always add a tie-breaker to the ORDER BY), COUNT(DISTINCT ...)",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "aggregate.logistics",
+  "kind": "sql",
+  "technique": "aggregate",
+  "technique_desc": "GROUP BY with COUNT, SUM, AVG, MIN, MAX, HAVING, ORDER BY with LIMIT (always add a tie-breaker to the ORDER BY), COUNT(DISTINCT ...)",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "aggregate.marketing",
+  "kind": "sql",
+  "technique": "aggregate",
+  "technique_desc": "GROUP BY with COUNT, SUM, AVG, MIN, MAX, HAVING, ORDER BY with LIMIT (always add a tie-breaker to the ORDER BY), COUNT(DISTINCT ...)",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "aggregate.supply",
+  "kind": "sql",
+  "technique": "aggregate",
+  "technique_desc": "GROUP BY with COUNT, SUM, AVG, MIN, MAX, HAVING, ORDER BY with LIMIT (always add a tie-breaker to the ORDER BY), COUNT(DISTINCT ...)",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "multi_join.orders",
+  "kind": "sql",
+  "technique": "multi_join",
+  "technique_desc": "three to five tables joined, including bridge tables (ord_promo, prod_supplier) and lookup tables; the join keys must be the right ones",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "multi_join.support",
+  "kind": "sql",
+  "technique": "multi_join",
+  "technique_desc": "three to five tables joined, including bridge tables (ord_promo, prod_supplier) and lookup tables; the join keys must be the right ones",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "multi_join.logistics",
+  "kind": "sql",
+  "technique": "multi_join",
+  "technique_desc": "three to five tables joined, including bridge tables (ord_promo, prod_supplier) and lookup tables; the join keys must be the right ones",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "multi_join.marketing",
+  "kind": "sql",
+  "technique": "multi_join",
+  "technique_desc": "three to five tables joined, including bridge tables (ord_promo, prod_supplier) and lookup tables; the join keys must be the right ones",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "multi_join.supply",
+  "kind": "sql",
+  "technique": "multi_join",
+  "technique_desc": "three to five tables joined, including bridge tables (ord_promo, prod_supplier) and lookup tables; the join keys must be the right ones",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "fanout.orders",
+  "kind": "sql",
+  "technique": "fanout",
+  "technique_desc": "questions where a careless join multiplies rows (orders joined to lines, payments, shipments or promotions): counts must use DISTINCT or pre-aggregation to stay correct",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "fanout.support",
+  "kind": "sql",
+  "technique": "fanout",
+  "technique_desc": "questions where a careless join multiplies rows (orders joined to lines, payments, shipments or promotions): counts must use DISTINCT or pre-aggregation to stay correct",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "fanout.logistics",
+  "kind": "sql",
+  "technique": "fanout",
+  "technique_desc": "questions where a careless join multiplies rows (orders joined to lines, payments, shipments or promotions): counts must use DISTINCT or pre-aggregation to stay correct",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "fanout.marketing",
+  "kind": "sql",
+  "technique": "fanout",
+  "technique_desc": "questions where a careless join multiplies rows (orders joined to lines, payments, shipments or promotions): counts must use DISTINCT or pre-aggregation to stay correct",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "fanout.supply",
+  "kind": "sql",
+  "technique": "fanout",
+  "technique_desc": "questions where a careless join multiplies rows (orders joined to lines, payments, shipments or promotions): counts must use DISTINCT or pre-aggregation to stay correct",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "date_time.orders",
+  "kind": "sql",
+  "technique": "date_time",
+  "technique_desc": "date arithmetic with explicit dates in the question: DATEDIFF, BETWEEN, month and quarter filters, customers who signed up in a period, ages of tickets in days",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "date_time.support",
+  "kind": "sql",
+  "technique": "date_time",
+  "technique_desc": "date arithmetic with explicit dates in the question: DATEDIFF, BETWEEN, month and quarter filters, customers who signed up in a period, ages of tickets in days",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "date_time.logistics",
+  "kind": "sql",
+  "technique": "date_time",
+  "technique_desc": "date arithmetic with explicit dates in the question: DATEDIFF, BETWEEN, month and quarter filters, customers who signed up in a period, ages of tickets in days",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "date_time.marketing",
+  "kind": "sql",
+  "technique": "date_time",
+  "technique_desc": "date arithmetic with explicit dates in the question: DATEDIFF, BETWEEN, month and quarter filters, customers who signed up in a period, ages of tickets in days",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "date_time.supply",
+  "kind": "sql",
+  "technique": "date_time",
+  "technique_desc": "date arithmetic with explicit dates in the question: DATEDIFF, BETWEEN, month and quarter filters, customers who signed up in a period, ages of tickets in days",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "time_bucket.orders",
+  "kind": "sql",
+  "technique": "time_bucket",
+  "technique_desc": "bucketing by month, week or quarter with DATE_FORMAT, YEAR, MONTH, QUARTER or DATE_SUB, one row per bucket in time order",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "time_bucket.support",
+  "kind": "sql",
+  "technique": "time_bucket",
+  "technique_desc": "bucketing by month, week or quarter with DATE_FORMAT, YEAR, MONTH, QUARTER or DATE_SUB, one row per bucket in time order",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "time_bucket.logistics",
+  "kind": "sql",
+  "technique": "time_bucket",
+  "technique_desc": "bucketing by month, week or quarter with DATE_FORMAT, YEAR, MONTH, QUARTER or DATE_SUB, one row per bucket in time order",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "time_bucket.marketing",
+  "kind": "sql",
+  "technique": "time_bucket",
+  "technique_desc": "bucketing by month, week or quarter with DATE_FORMAT, YEAR, MONTH, QUARTER or DATE_SUB, one row per bucket in time order",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "time_bucket.supply",
+  "kind": "sql",
+  "technique": "time_bucket",
+  "technique_desc": "bucketing by month, week or quarter with DATE_FORMAT, YEAR, MONTH, QUARTER or DATE_SUB, one row per bucket in time order",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "window.orders",
+  "kind": "sql",
+  "technique": "window",
+  "technique_desc": "window functions: RANK, DENSE_RANK, ROW_NUMBER, running totals, LAG, LEAD, top N per group, percent of total",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "window.support",
+  "kind": "sql",
+  "technique": "window",
+  "technique_desc": "window functions: RANK, DENSE_RANK, ROW_NUMBER, running totals, LAG, LEAD, top N per group, percent of total",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "window.logistics",
+  "kind": "sql",
+  "technique": "window",
+  "technique_desc": "window functions: RANK, DENSE_RANK, ROW_NUMBER, running totals, LAG, LEAD, top N per group, percent of total",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "window.marketing",
+  "kind": "sql",
+  "technique": "window",
+  "technique_desc": "window functions: RANK, DENSE_RANK, ROW_NUMBER, running totals, LAG, LEAD, top N per group, percent of total",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "window.supply",
+  "kind": "sql",
+  "technique": "window",
+  "technique_desc": "window functions: RANK, DENSE_RANK, ROW_NUMBER, running totals, LAG, LEAD, top N per group, percent of total",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "cte_multistep.orders",
+  "kind": "sql",
+  "technique": "cte_multistep",
+  "technique_desc": "WITH clauses that build the answer in two or three steps: aggregate first then filter on the aggregate, cohort comparisons, percentages of a subset",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "cte_multistep.support",
+  "kind": "sql",
+  "technique": "cte_multistep",
+  "technique_desc": "WITH clauses that build the answer in two or three steps: aggregate first then filter on the aggregate, cohort comparisons, percentages of a subset",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "cte_multistep.logistics",
+  "kind": "sql",
+  "technique": "cte_multistep",
+  "technique_desc": "WITH clauses that build the answer in two or three steps: aggregate first then filter on the aggregate, cohort comparisons, percentages of a subset",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "cte_multistep.marketing",
+  "kind": "sql",
+  "technique": "cte_multistep",
+  "technique_desc": "WITH clauses that build the answer in two or three steps: aggregate first then filter on the aggregate, cohort comparisons, percentages of a subset",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "cte_multistep.supply",
+  "kind": "sql",
+  "technique": "cte_multistep",
+  "technique_desc": "WITH clauses that build the answer in two or three steps: aggregate first then filter on the aggregate, cohort comparisons, percentages of a subset",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "set_ops.orders",
+  "kind": "sql",
+  "technique": "set_ops",
+  "technique_desc": "UNION, INTERSECT, EXCEPT, NOT EXISTS, NOT IN, customers who did A but never B, entities in both of two groups",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "set_ops.support",
+  "kind": "sql",
+  "technique": "set_ops",
+  "technique_desc": "UNION, INTERSECT, EXCEPT, NOT EXISTS, NOT IN, customers who did A but never B, entities in both of two groups",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "set_ops.logistics",
+  "kind": "sql",
+  "technique": "set_ops",
+  "technique_desc": "UNION, INTERSECT, EXCEPT, NOT EXISTS, NOT IN, customers who did A but never B, entities in both of two groups",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "set_ops.marketing",
+  "kind": "sql",
+  "technique": "set_ops",
+  "technique_desc": "UNION, INTERSECT, EXCEPT, NOT EXISTS, NOT IN, customers who did A but never B, entities in both of two groups",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "set_ops.supply",
+  "kind": "sql",
+  "technique": "set_ops",
+  "technique_desc": "UNION, INTERSECT, EXCEPT, NOT EXISTS, NOT IN, customers who did A but never B, entities in both of two groups",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "correlated.orders",
+  "kind": "sql",
+  "technique": "correlated",
+  "technique_desc": "correlated subqueries and EXISTS: rows above the average of their own group, the latest row per entity, entities with no matching rows",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "correlated.support",
+  "kind": "sql",
+  "technique": "correlated",
+  "technique_desc": "correlated subqueries and EXISTS: rows above the average of their own group, the latest row per entity, entities with no matching rows",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "correlated.logistics",
+  "kind": "sql",
+  "technique": "correlated",
+  "technique_desc": "correlated subqueries and EXISTS: rows above the average of their own group, the latest row per entity, entities with no matching rows",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "correlated.marketing",
+  "kind": "sql",
+  "technique": "correlated",
+  "technique_desc": "correlated subqueries and EXISTS: rows above the average of their own group, the latest row per entity, entities with no matching rows",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "correlated.supply",
+  "kind": "sql",
+  "technique": "correlated",
+  "technique_desc": "correlated subqueries and EXISTS: rows above the average of their own group, the latest row per entity, entities with no matching rows",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "pivot.orders",
+  "kind": "sql",
+  "technique": "pivot",
+  "technique_desc": "conditional aggregation, one row with several counts or sums side by side, SUM(CASE WHEN ...), COUNT(DISTINCT CASE WHEN ...), rates and ratios",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "pivot.support",
+  "kind": "sql",
+  "technique": "pivot",
+  "technique_desc": "conditional aggregation, one row with several counts or sums side by side, SUM(CASE WHEN ...), COUNT(DISTINCT CASE WHEN ...), rates and ratios",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "pivot.logistics",
+  "kind": "sql",
+  "technique": "pivot",
+  "technique_desc": "conditional aggregation, one row with several counts or sums side by side, SUM(CASE WHEN ...), COUNT(DISTINCT CASE WHEN ...), rates and ratios",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "pivot.marketing",
+  "kind": "sql",
+  "technique": "pivot",
+  "technique_desc": "conditional aggregation, one row with several counts or sums side by side, SUM(CASE WHEN ...), COUNT(DISTINCT CASE WHEN ...), rates and ratios",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "pivot.supply",
+  "kind": "sql",
+  "technique": "pivot",
+  "technique_desc": "conditional aggregation, one row with several counts or sums side by side, SUM(CASE WHEN ...), COUNT(DISTINCT CASE WHEN ...), rates and ratios",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "evidence.orders",
+  "kind": "sql",
+  "technique": "evidence",
+  "technique_desc": "the question first DEFINES a business term in a sentence (for example 'a late shipment is one delivered more than N days after it shipped') and then asks something that needs that definition",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "evidence.support",
+  "kind": "sql",
+  "technique": "evidence",
+  "technique_desc": "the question first DEFINES a business term in a sentence (for example 'a late shipment is one delivered more than N days after it shipped') and then asks something that needs that definition",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "evidence.logistics",
+  "kind": "sql",
+  "technique": "evidence",
+  "technique_desc": "the question first DEFINES a business term in a sentence (for example 'a late shipment is one delivered more than N days after it shipped') and then asks something that needs that definition",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "evidence.marketing",
+  "kind": "sql",
+  "technique": "evidence",
+  "technique_desc": "the question first DEFINES a business term in a sentence (for example 'a late shipment is one delivered more than N days after it shipped') and then asks something that needs that definition",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "evidence.supply",
+  "kind": "sql",
+  "technique": "evidence",
+  "technique_desc": "the question first DEFINES a business term in a sentence (for example 'a late shipment is one delivered more than N days after it shipped') and then asks something that needs that definition",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "hierarchy.orders",
+  "kind": "sql",
+  "technique": "hierarchy",
+  "technique_desc": "the employee reporting tree (emp.mgr_emp_id): direct reports, managers of managers, depth, chain of command, recursive WITH RECURSIVE queries, and department roll-ups",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "hierarchy.support",
+  "kind": "sql",
+  "technique": "hierarchy",
+  "technique_desc": "the employee reporting tree (emp.mgr_emp_id): direct reports, managers of managers, depth, chain of command, recursive WITH RECURSIVE queries, and department roll-ups",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "hierarchy.logistics",
+  "kind": "sql",
+  "technique": "hierarchy",
+  "technique_desc": "the employee reporting tree (emp.mgr_emp_id): direct reports, managers of managers, depth, chain of command, recursive WITH RECURSIVE queries, and department roll-ups",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "hierarchy.marketing",
+  "kind": "sql",
+  "technique": "hierarchy",
+  "technique_desc": "the employee reporting tree (emp.mgr_emp_id): direct reports, managers of managers, depth, chain of command, recursive WITH RECURSIVE queries, and department roll-ups",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "hierarchy.supply",
+  "kind": "sql",
+  "technique": "hierarchy",
+  "technique_desc": "the employee reporting tree (emp.mgr_emp_id): direct reports, managers of managers, depth, chain of command, recursive WITH RECURSIVE queries, and department roll-ups",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "state_codes.orders",
+  "kind": "sql",
+  "technique": "state_codes",
+  "technique_desc": "questions that name a status, tier, region, channel or category in WORDS, so the query must use the stored CODE (read the column comments and the example values)",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "state_codes.support",
+  "kind": "sql",
+  "technique": "state_codes",
+  "technique_desc": "questions that name a status, tier, region, channel or category in WORDS, so the query must use the stored CODE (read the column comments and the example values)",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "state_codes.logistics",
+  "kind": "sql",
+  "technique": "state_codes",
+  "technique_desc": "questions that name a status, tier, region, channel or category in WORDS, so the query must use the stored CODE (read the column comments and the example values)",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "state_codes.marketing",
+  "kind": "sql",
+  "technique": "state_codes",
+  "technique_desc": "questions that name a status, tier, region, channel or category in WORDS, so the query must use the stored CODE (read the column comments and the example values)",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "state_codes.supply",
+  "kind": "sql",
+  "technique": "state_codes",
+  "technique_desc": "questions that name a status, tier, region, channel or category in WORDS, so the query must use the stored CODE (read the column comments and the example values)",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "decline_unanswerable.orders.0",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "decline_unanswerable.orders.1",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "decline_unanswerable.support.0",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "decline_unanswerable.support.1",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "decline_unanswerable.logistics.0",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "decline_unanswerable.logistics.1",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "decline_unanswerable.marketing.0",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "decline_unanswerable.marketing.1",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "decline_unanswerable.supply.0",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "decline_unanswerable.supply.1",
+  "kind": "unanswerable",
+  "technique": "decline_unanswerable",
+  "technique_desc": "questions the database CANNOT answer because the data does not exist in it (a fact, attribute, measure or history that no table or column holds). Each reply is exactly one line: -- UNANSWERABLE: <short reason naming what is missing>. Make them sound like realistic business questions, and make sure the topic really is absent: check every table and column before you choose it.",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "decline_ambiguous.orders.0",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a finance analyst"
+ },
+ {
+  "id": "decline_ambiguous.orders.1",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "orders",
+  "tables": "cust_master, ord_hdr, ord_line, prod_catalog, fx_rate, code_lookup",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "decline_ambiguous.support.0",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a customer support lead"
+ },
+ {
+  "id": "decline_ambiguous.support.1",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "support",
+  "tables": "support_tkt, tkt_event, refund_req, emp, policy_rule, cust_master, ord_hdr",
+  "persona": "a procurement manager"
+ },
+ {
+  "id": "decline_ambiguous.logistics.0",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "a warehouse and logistics manager"
+ },
+ {
+  "id": "decline_ambiguous.logistics.1",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "logistics",
+  "tables": "shipment, warehouse, inventory, inv_move, payment, ord_hdr, prod_catalog",
+  "persona": "an executive asking for a quick number"
+ },
+ {
+  "id": "decline_ambiguous.marketing.0",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a marketing analyst"
+ },
+ {
+  "id": "decline_ambiguous.marketing.1",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "marketing",
+  "tables": "promo, ord_promo, web_event, cust_segment_hist, cust_master, ord_hdr",
+  "persona": "a data analyst preparing a monthly report"
+ },
+ {
+  "id": "decline_ambiguous.supply.0",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a sales operations manager"
+ },
+ {
+  "id": "decline_ambiguous.supply.1",
+  "kind": "ambiguous",
+  "technique": "decline_ambiguous",
+  "technique_desc": "questions that are TOO VAGUE to answer without guessing: they leave out which measure, period, currency, status or which of several meanings to use. Each reply is exactly one line: -- CLARIFY: <the question you need answered>. The missing detail must be genuinely needed; do not pick questions that have an obvious default.",
+  "cluster": "supply",
+  "tables": "supplier, prod_supplier, prod_catalog, inventory, inv_move, warehouse, ord_line",
+  "persona": "a finance analyst"
+ }
+]
