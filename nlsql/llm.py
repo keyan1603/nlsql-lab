@@ -40,6 +40,9 @@ def list_models(base_url: str = BASE_URL) -> list[str]:
 
 def chat(model: str, messages: list[dict], max_tokens: int = 1024, temperature: float = 0.0, timeout_s: float = 600,
          base_url: str = BASE_URL) -> Completion:
+    if model.startswith("gemini"):                           # hosted model: same call, same result type (see nlsql/llm_gemini.py)
+        from nlsql import llm_gemini
+        return llm_gemini.chat(model, messages, max_tokens=max_tokens, temperature=temperature)
     body = json.dumps({"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens, "stream": False}).encode()
     req = urllib.request.Request(f"{base_url}/chat/completions", data=body, headers={"Content-Type": "application/json"})
     t0 = time.perf_counter()
