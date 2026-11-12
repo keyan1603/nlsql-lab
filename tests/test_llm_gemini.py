@@ -154,3 +154,11 @@ def test_llm_chat_routes_gemini_models_to_the_hosted_client(monkeypatch):
     called = {}
     monkeypatch.setattr(llm_gemini, "chat", lambda model, messages, **kw: called.update(model=model, kw=kw) or "routed")
     assert llm.chat("gemini-3.5-flash-lite", MSGS, max_tokens=99) == "routed" and called["model"] == "gemini-3.5-flash-lite" and called["kw"]["max_tokens"] == 99
+
+
+def test_latency_is_the_request_only_not_the_wait_for_a_rate_limit_slot(env, server, monkeypatch):
+    import time as real_time
+    monkeypatch.setattr(llm_gemini, "_wait_for_slot", lambda: real_time.sleep(0.5))
+    f = server([(200, ok("SELECT 5"), None)])
+    c = chat("gemini-test", MSGS, base_url=f.url, usage_path=env)
+    assert c.latency_s < 0.4

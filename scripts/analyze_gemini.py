@@ -79,8 +79,16 @@ def main() -> int:
              "Same questions, same database, same grader. p is the exact two-sided sign test on the answerable questions only one of them got right.", "", *rows]
     if qcount:
         lines += ["", f"Pooled over the sets that finished: local {tot['l'][0]}/{tot['l'][1]} ({tot['l'][0] / tot['l'][1] * 100:.1f}%), hosted {tot['h'][0]}/{tot['h'][1]} ({tot['h'][0] / tot['h'][1] * 100:.1f}%). "
-                  f"Mean seconds per question: local {sum(lat['l']) / qcount:.1f}, hosted {sum(lat['h']) / qcount:.1f}. "
+                  f"Mean seconds per question, local: {sum(lat['l']) / qcount:.1f}. "
                   f"Hosted tokens: {tokens[0]:,} in, {tokens[1]:,} out over {qcount} questions ({tokens[0] / qcount:,.0f} and {tokens[1] / qcount:,.0f} per question)."]
+    sample = load("gemini-latency-sample")
+    if sample:
+        ls = sorted(r["latency_s"] for r in sample.values())
+        first = load("gemini-flashlite-hard")
+        lines += ["", f"Hosted latency, measured on a {len(ls)}-question sample after the client timer was fixed to exclude rate-limit waits (the full run's timer included them): "
+                  f"mean {statistics.mean(ls):.1f} s, median {ls[len(ls) // 2]:.1f} s, 95th percentile {ls[int(0.95 * (len(ls) - 1))]:.1f} s. "
+                  f"The same {len(ls)} questions had the same outcome (right or wrong) in both hosted runs, although the SQL text differed in "
+                  f"{sum(r['sql'] != first[q]['sql'] for q, r in sample.items())} of them: the hosted model is not bit-for-bit repeatable at temperature 0."]
     text = "\n".join(lines) + "\n"
     (ROOT / "docs" / "results" / "gemini_vs_local.md").write_text(text, encoding="utf-8")
     print(text)

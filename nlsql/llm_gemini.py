@@ -108,17 +108,18 @@ def chat(model: str, messages: list[dict], max_tokens: int = 4096, temperature: 
     key = api_key()
     url = f"{base_url}/models/{model}:generateContent"
     headers = {"Content-Type": "application/json", "x-goog-api-key": key}
-    t0 = time.perf_counter()
     last = "no attempt made"
     for attempt in range(max_retries + 1):
         _count_request(usage_path)
         _wait_for_slot()
         try:
             req = urllib.request.Request(url, data=payload, headers=headers)
+            t_req = time.perf_counter()                      # latency is the request itself, not time spent waiting for a rate-limit slot or retrying
             with urllib.request.urlopen(req, timeout=timeout_s) as r:
                 data = json.load(r)
+            latency = time.perf_counter() - t_req
             text, finish, tin, tout, stats = parse_response(data)
-            return Completion(text=text, latency_s=time.perf_counter() - t0, tokens_in=tin, tokens_out=tout, finish_reason=finish, stats=stats)
+            return Completion(text=text, latency_s=latency, tokens_in=tin, tokens_out=tout, finish_reason=finish, stats=stats)
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", "replace")[:400].replace(key, "***")
             if exc.code == 429 and ("PerDay" in detail or "per day" in detail.lower()):
