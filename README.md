@@ -231,3 +231,20 @@ What it costs: 186 of the 187 answerable gold queries return identical results t
 - **Tokens:** 3,761 in and 93 out per question on average (the prompt carries the whole schema), 816,188 and 20,139 in total.
 
 Caveats: one hosted model, one prompt, one run per set (plus the 30-question repeat); the stress set is the one I wrote to be hard, so it exaggerates the gap relative to a typical workload; the free tier is not a production service (rate limits, no uptime commitment, and prompts may be used to improve the service, which is why only the synthetic schema and questions were sent).
+
+## What does a question cost?
+
+`scripts/cost_model.py` writes `docs/results/cost_model.md`. Every number is marked as measured in this lab, published (with its source), or assumed (with a range), because a laptop's CPU draw, an electricity price and a server's monthly cost are not things this lab can measure.
+
+| Per 1,000 questions | USD |
+|---|---|
+| Hosted, free tier | 0, but rate-limited and its content is used to improve the provider's products (per the [pricing page](https://ai.google.dev/gemini-api/docs/pricing), read 2026-11-12): not for private data |
+| Hosted, paid Standard tier ($0.30 in, $2.50 out per 1M tokens) | 1.36 |
+| Hosted, paid Batch tier (half price, asynchronous) | 0.68 |
+| Local, electricity only (estimate) | 0.03 (range 0.01 to 0.08) |
+
+- **Measured:** 3,761 input and 93 output tokens per hosted question; 12.7 s per question locally; the GPU drew 14.3 W on average while generating (4.7 W idle, `scripts/measure_power.py`). Under partial offload the CPU does much of the work and its draw is not measurable from here, so I assumed 40 W for it and the rest of the machine (range 20 to 60) and $0.15 per kWh (range 0.08 to 0.30). Treat the local figure as an order of magnitude.
+- **Electricity is about 47 times cheaper per question than hosted tokens, but it is not the local cost.** The machine has to exist. Against an assumed $200 a month for a dedicated machine, the local setup breaks even with the Standard tier at about 150,000 questions a month (37,500 at $50, 600,000 at $800), and this laptop could answer roughly 205,000 a month flat out. Below the break-even volume hosted is cheaper; above it local is, if the answers are good enough, and on the stress set the local model got 56% against 87%.
+- **Per 1,000 correct answers on the stress set:** local about $0.05, hosted $1.56. That folds accuracy into price and treats a wrong answer as costing nothing beyond its own price, which in an enterprise it does not.
+- **The prune-and-retry stack on the hosted model** did not change accuracy (112 right against 110, 6 gained and 4 lost, p 0.75; SQL errors 9 to 6; 143 calls for 126 questions), but showing only the likely tables cut input tokens from 4,219 to 1,830 per question and the Standard-tier cost from $1.59 to $0.93 per 1,000. For the 7B model the same stack was a plausible accuracy gain; for the stronger model its value is cost.
+- The free tier is where this lab's hosted runs lived (400 of the day's 500 requests). It is fine for synthetic data and useless for the data a real enterprise would ask about.

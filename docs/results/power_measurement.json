@@ -1,0 +1,11 @@
+{
+ "gpu": "NVIDIA GeForce RTX 2050",
+ "model": "improve-q4km",
+ "questions": 10,
+ "idle_w_mean": 4.7,
+ "load_w_mean": 14.3,
+ "load_w_peak": 20.0,
+ "samples": 99,
+ "seconds_per_question": 10.88,
+ "gpu_wh_per_question": 0.0433
+}
