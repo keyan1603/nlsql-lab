@@ -10,3 +10,6 @@ venv-train/
 train/base/
 train/out/
 train/*.log
+train/base3b/
+train/*.out
+train/*.done

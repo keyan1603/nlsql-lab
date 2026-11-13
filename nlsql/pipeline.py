@@ -107,7 +107,7 @@ def _ddl_subset(names: set, include_comments: bool, extended: bool) -> str:
 def build(question: str, opts: Options) -> tuple[list[dict], dict]:
     """The messages for one question and a record of what was shown."""
     if opts.prompt == "tuned":
-        return build_tuned_messages(question), {"tables": "in the weights", "fewshot": []}
+        return build_tuned_messages(question), {"tables": "likely tables, compact", "fewshot": []}
     if opts.baseline:
         return build_messages(question, opts.comments, opts.extended), {"tables": "all", "fewshot": []}
     tables = parse_schema(opts.extended)
