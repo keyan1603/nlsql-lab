@@ -1,0 +1,146 @@
+{
+ "as_of": "2026-10-31",
+ "note": "Second dev set. One-filter joins, lookups through an intermediate table, top-one, distinct counts and literal dates on values and shapes no training pair uses. Written after the run-5 failure analysis and before the fix was trained and scored.",
+ "questions": [
+  {
+   "id": "DC01",
+   "category": "one_filter_join",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Show the rfd id and the customer name for every refund request for damaged goods.",
+   "gold_sql": "SELECT r.rfd_id, c.cust_nm FROM refund_req r JOIN ord_hdr o ON o.ord_id = r.ord_id JOIN cust_master c ON c.cust_id = o.cust_id WHERE r.reason_cd = 'DMG'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC02",
+   "category": "distinct_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many customers have at least one refund request for damaged goods?",
+   "gold_sql": "SELECT COUNT(DISTINCT o.cust_id) FROM refund_req r JOIN ord_hdr o ON o.ord_id = r.ord_id JOIN cust_master c ON c.cust_id = o.cust_id WHERE r.reason_cd = 'DMG'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC03",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which department does the employee on ticket T-70105 work in?",
+   "gold_sql": "SELECT e.dept_cd FROM support_tkt t JOIN emp e ON e.emp_id = t.assigned_emp_id WHERE t.tkt_id = 'T-70105'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC04",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which department does the employee on ticket T-70040 work in?",
+   "gold_sql": "SELECT e.dept_cd FROM support_tkt t JOIN emp e ON e.emp_id = t.assigned_emp_id WHERE t.tkt_id = 'T-70040'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC05",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which department does the employee on ticket T-70024 work in?",
+   "gold_sql": "SELECT e.dept_cd FROM support_tkt t JOIN emp e ON e.emp_id = t.assigned_emp_id WHERE t.tkt_id = 'T-70024'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC06",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the status of the order that shipment S-8110 belongs to?",
+   "gold_sql": "SELECT o.ord_status FROM shipment s JOIN ord_hdr o ON o.ord_id = s.ord_id WHERE s.ship_id = 'S-8110'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC07",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the status of the order that shipment S-8063 belongs to?",
+   "gold_sql": "SELECT o.ord_status FROM shipment s JOIN ord_hdr o ON o.ord_id = s.ord_id WHERE s.ship_id = 'S-8063'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC08",
+   "category": "hop_through",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the status of the order that shipment S-8216 belongs to?",
+   "gold_sql": "SELECT o.ord_status FROM shipment s JOIN ord_hdr o ON o.ord_id = s.ord_id WHERE s.ship_id = 'S-8216'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC09",
+   "category": "top_one",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which payment method has the most payments? Show the method and the count.",
+   "gold_sql": "SELECT method_cd, COUNT(*) AS n FROM payment GROUP BY method_cd ORDER BY n DESC LIMIT 1",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC10",
+   "category": "top_one",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which warehouse has sent the most shipments? Show the warehouse id and the count.",
+   "gold_sql": "SELECT wh_id, COUNT(*) AS n FROM shipment GROUP BY wh_id ORDER BY n DESC LIMIT 1",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC11",
+   "category": "distinct_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many orders have at least one line with quantity above 4?",
+   "gold_sql": "SELECT COUNT(DISTINCT ord_id) FROM ord_line WHERE qty > 4",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC12",
+   "category": "distinct_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many orders have at least one refund request?",
+   "gold_sql": "SELECT COUNT(DISTINCT ord_id) FROM refund_req",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC13",
+   "category": "literal_date",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many orders were placed on or after 2026-08-15?",
+   "gold_sql": "SELECT COUNT(*) FROM ord_hdr WHERE ord_dt >= '2026-08-15'",
+   "tests": "answer exactly the question: no invented filter or column"
+  },
+  {
+   "id": "DC14",
+   "category": "literal_date",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many refund requests were made before 2026-05-15?",
+   "gold_sql": "SELECT COUNT(*) FROM refund_req WHERE req_dt < '2026-05-15'",
+   "tests": "answer exactly the question: no invented filter or column"
+  }
+ ]
+}

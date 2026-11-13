@@ -1,0 +1,294 @@
+{
+ "as_of": "2026-10-31",
+ "note": "Dev set for the terse-question fix. Short answerable questions on (column, value) cells that no training pair and no test gold query uses, three two-table lookup shapes not trained on, and short vague and unanswerable questions. Written before the fix was trained and scored.",
+ "questions": [
+  {
+   "id": "DT01",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Count the refund requests for damaged goods.",
+   "gold_sql": "SELECT COUNT(*) FROM refund_req WHERE reason_cd = 'DMG'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT02",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the number of refund requests for damaged goods?",
+   "gold_sql": "SELECT COUNT(*) FROM refund_req WHERE reason_cd = 'DMG'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT03",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the number of warehouses serving Asia Pacific?",
+   "gold_sql": "SELECT COUNT(*) FROM warehouse WHERE region_cd = 'AP'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT04",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many warehouses serving Asia Pacific are there?",
+   "gold_sql": "SELECT COUNT(*) FROM warehouse WHERE region_cd = 'AP'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT05",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Count the stock count corrections.",
+   "gold_sql": "SELECT COUNT(*) FROM inv_move WHERE mv_type = 'ADJ'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT06",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Number of stock count corrections?",
+   "gold_sql": "SELECT COUNT(*) FROM inv_move WHERE mv_type = 'ADJ'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT07",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Total ticket replies logged?",
+   "gold_sql": "SELECT COUNT(*) FROM tkt_event WHERE evt_type = 'REPLY'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT08",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many ticket reply events are there?",
+   "gold_sql": "SELECT COUNT(*) FROM tkt_event WHERE evt_type = 'REPLY'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT09",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the number of ticket reply events?",
+   "gold_sql": "SELECT COUNT(*) FROM tkt_event WHERE evt_type = 'REPLY'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT10",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many people work in finance?",
+   "gold_sql": "SELECT COUNT(*) FROM emp WHERE dept_cd = 'FIN'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT11",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the number of employees in finance?",
+   "gold_sql": "SELECT COUNT(*) FROM emp WHERE dept_cd = 'FIN'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT12",
+   "category": "terse_count",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many employees in finance?",
+   "gold_sql": "SELECT COUNT(*) FROM emp WHERE dept_cd = 'FIN'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT13",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the name of the customer behind payment P-3006?",
+   "gold_sql": "SELECT c.cust_nm FROM payment p JOIN ord_hdr o ON o.ord_id = p.ord_id JOIN cust_master c ON c.cust_id = o.cust_id WHERE p.pay_id = 'P-3006'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT14",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Who made payment P-3184?",
+   "gold_sql": "SELECT c.cust_nm FROM payment p JOIN ord_hdr o ON o.ord_id = p.ord_id JOIN cust_master c ON c.cust_id = o.cust_id WHERE p.pay_id = 'P-3184'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT15",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which supplier is the main one for product KIT-009?",
+   "gold_sql": "SELECT s.sup_nm FROM prod_supplier ps JOIN supplier s ON s.sup_id = ps.sup_id WHERE ps.sku = 'KIT-009' AND ps.is_primary = 1",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT16",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which supplier is the main one for product KIT-007?",
+   "gold_sql": "SELECT s.sup_nm FROM prod_supplier ps JOIN supplier s ON s.sup_id = ps.sup_id WHERE ps.sku = 'KIT-007' AND ps.is_primary = 1",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT17",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which promotion was used on order O-5144?",
+   "gold_sql": "SELECT p.promo_nm FROM ord_promo op JOIN promo p ON p.promo_id = op.promo_id WHERE op.ord_id = 'O-5144'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT18",
+   "category": "hop_lookup",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which promotion was used on order O-5066?",
+   "gold_sql": "SELECT p.promo_nm FROM ord_promo op JOIN promo p ON p.promo_id = op.promo_id WHERE op.ord_id = 'O-5066'",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT19",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Show me the performance.",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT20",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Which customers matter most?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT21",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Give me the highlights.",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT22",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "What changed recently?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT23",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Compare the regions.",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT24",
+   "category": "short_clarify",
+   "difficulty": "easy",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "How is fulfilment?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT25",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What is the average customer rating?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT26",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "Show product weights.",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT27",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "How many employees are over 50?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT28",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "Which suppliers are certified?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT29",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "List customer birthdays.",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  },
+  {
+   "id": "DT30",
+   "category": "short_unanswerable",
+   "difficulty": "easy",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What is the carbon footprint per order?",
+   "tests": "terse question on a cell, shape or topic the training set never used"
+  }
+ ]
+}

@@ -157,6 +157,7 @@ def main() -> None:
                     g["lr"] = lr_at(step)
                 opt.step()
                 opt.zero_grad(set_to_none=True)
+                torch.cuda.empty_cache()                    # variable-length batches fragment the cache; on a 4 GB card the overflow spills to system memory and training slows several-fold
                 step += 1
                 if step % 5 == 0:
                     rec = {"step": step, "epoch": epoch + 1, "loss": round(run_loss / run_n, 4), "lr": round(lr_at(step), 7), "elapsed_s": round(time.time() - t0),
