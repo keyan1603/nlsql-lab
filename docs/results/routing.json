@@ -2,10 +2,10 @@
  "strategies": {
   "core + stress (181 questions)": {
    "All local (tuned 3B + retry)": {
-    "correct": 96,
+    "correct": 104,
     "n": 181,
     "sent_to_hosted": 0,
-    "usd_per_1000": 0.05
+    "usd_per_1000": 0.062
    },
    "All hosted (gemini-3.5-flash-lite)": {
     "correct": 160,
@@ -14,40 +14,52 @@
     "usd_per_1000": 1.364
    },
    "Rules, 1+ family": {
-    "correct": 122,
+    "correct": 129,
     "n": 181,
     "sent_to_hosted": 57,
-    "usd_per_1000": 0.512
+    "usd_per_1000": 0.522
    },
    "Rules, 2+ families": {
-    "correct": 98,
+    "correct": 106,
     "n": 181,
     "sent_to_hosted": 5,
-    "usd_per_1000": 0.095
+    "usd_per_1000": 0.106
    },
    "Local, escalate on error or empty": {
-    "correct": 115,
+    "correct": 124,
     "n": 181,
-    "sent_to_hosted": 22,
-    "usd_per_1000": 0.246
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.269
    },
    "Local, escalate on error, empty or decline": {
     "correct": 127,
     "n": 181,
-    "sent_to_hosted": 41,
-    "usd_per_1000": 0.35
+    "sent_to_hosted": 35,
+    "usd_per_1000": 0.337
    },
    "Rules 1+, plus escalate on error, empty or decline": {
-    "correct": 140,
+    "correct": 145,
     "n": 181,
     "sent_to_hosted": 82,
-    "usd_per_1000": 0.678
+    "usd_per_1000": 0.71
    },
    "Rules 2+, plus escalate on error, empty or decline": {
-    "correct": 128,
+    "correct": 129,
     "n": 181,
-    "sent_to_hosted": 45,
-    "usd_per_1000": 0.386
+    "sent_to_hosted": 40,
+    "usd_per_1000": 0.381
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 134,
+    "n": 181,
+    "sent_to_hosted": 43,
+    "usd_per_1000": 0.392
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 151,
+    "n": 181,
+    "sent_to_hosted": 89,
+    "usd_per_1000": 0.756
    }
   },
   "decline set (36 questions)": {
@@ -55,7 +67,7 @@
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 0,
-    "usd_per_1000": 0.019
+    "usd_per_1000": 0.023
    },
    "All hosted (gemini-3.5-flash-lite)": {
     "correct": 34,
@@ -67,37 +79,49 @@
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 2,
-    "usd_per_1000": 0.091
+    "usd_per_1000": 0.096
    },
    "Rules, 2+ families": {
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 0,
-    "usd_per_1000": 0.019
+    "usd_per_1000": 0.023
    },
    "Local, escalate on error or empty": {
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 0,
-    "usd_per_1000": 0.019
+    "usd_per_1000": 0.023
    },
    "Local, escalate on error, empty or decline": {
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 24,
-    "usd_per_1000": 0.898
+    "usd_per_1000": 0.902
    },
    "Rules 1+, plus escalate on error, empty or decline": {
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 25,
-    "usd_per_1000": 0.935
+    "usd_per_1000": 0.939
    },
    "Rules 2+, plus escalate on error, empty or decline": {
     "correct": 35,
     "n": 36,
     "sent_to_hosted": 24,
-    "usd_per_1000": 0.898
+    "usd_per_1000": 0.902
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.902
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 25,
+    "usd_per_1000": 0.939
    }
   }
  },
@@ -121,48 +145,41 @@
   "cte_multistep": 0.132
  },
  "missed_ids": [
-  "A03",
-  "A06",
-  "A07",
+  "J04",
   "J05",
   "J06",
   "G04",
+  "D03",
   "D04",
   "D06",
   "N01",
-  "F03",
+  "H01",
   "H03",
-  "P03",
-  "U04",
-  "HJ01",
+  "P01",
   "HJ02",
   "HJ04",
   "HJ05",
   "HW05",
   "HC02",
+  "HE02",
   "HE03",
+  "HE05",
+  "HS03",
   "HS04",
   "HS05",
-  "HT04",
+  "HS07",
+  "HS08",
   "HT05",
   "HT06",
-  "HT07",
   "HD03",
   "HD05",
   "HD08",
-  "HX01",
-  "HX05",
-  "HX07",
-  "HX08",
-  "HJ09",
   "HW13",
-  "HC10",
-  "HC12",
   "HE09",
-  "HE11",
+  "HE13",
   "HS10",
+  "HP10",
   "HT10",
-  "HT11",
   "HD14",
   "HX10"
  ]

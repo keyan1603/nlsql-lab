@@ -21,9 +21,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from cost_model import ASSUMPTIONS, usd                      # noqa: E402
+from nlsql.invented import invented_values                   # noqa: E402
 from nlsql.router import FRONTIER, LOCAL, escalate, families_of, route   # noqa: E402
 
-LOCAL_RUN, HOSTED_RUN = "tuned4r2", "gemini-flashlite"
+LOCAL_RUN, HOSTED_RUN = "tuned6r2", "gemini-flashlite"   # LOCAL_RUN is overridden by --local-run
 SETS = {"core": ("", "questions"), "hard": ("-hard", "questions_hard"), "hard2": ("-hard2", "questions_hard2"), "decline": ("-decline", "questions_decline")}
 
 
@@ -63,6 +64,11 @@ def load_all() -> list[dict]:
 
 
 def main() -> int:
+    global LOCAL_RUN
+    args = sys.argv[1:]
+    if "--local-run" in args:
+        LOCAL_RUN = args[args.index("--local-run") + 1]
+    suffix = "" if LOCAL_RUN == "tuned6r2" else "_" + {"tuned4r2": "run4"}.get(LOCAL_RUN, LOCAL_RUN)
     power = json.loads((ROOT / "docs" / "results" / "power_measurement.json").read_text(encoding="utf-8"))
     kwh = ASSUMPTIONS["usd_per_kwh"][0]
     watts = power["load_w_mean"] + ASSUMPTIONS["cpu_and_system_w"][0]
@@ -71,6 +77,7 @@ def main() -> int:
         r["f_cost"] = usd(r["hosted"]["tokens_in"], r["hosted"]["tokens_out"], "Standard")
         r["l_cost"] = watts * r["local"]["latency_s"] / 3600 / 1000 * kwh
         r["why"] = escalate(r["local"]["kind"], status_of(r["local"]))
+        r["inv"] = bool(r["local"]["kind"] == "sql" and invented_values(r["question"], r["local"].get("sql") or ""))
 
     def strategy(first, up):
         """first: question -> 'local'|'frontier'; up: also escalate a failed local answer."""
@@ -84,6 +91,7 @@ def main() -> int:
 
     never, errs = (lambda r: False), (lambda r: r["why"] is not None)
     errs_only = lambda r: r["why"] is not None and not r["why"].startswith("the local model declined")
+    errs_inv = lambda r: r["why"] is not None or r["inv"]
     all_local, all_front = (lambda r: LOCAL), (lambda r: FRONTIER)
     rule = lambda t: (lambda r: route(r["question"], t).target)
     S = {
@@ -95,6 +103,8 @@ def main() -> int:
         "Local, escalate on error, empty or decline": strategy(all_local, errs),
         "Rules 1+, plus escalate on error, empty or decline": strategy(rule(1), errs),
         "Rules 2+, plus escalate on error, empty or decline": strategy(rule(2), errs),
+        "Local, escalate on error, empty, decline or invented value": strategy(all_local, errs_inv),
+        "Rules 1+, plus escalate on error, empty, decline or invented value": strategy(rule(1), errs_inv),
     }
     pools = {"core + stress (181 questions)": [r for r in rows if r["set"] != "decline"], "decline set (36 questions)": [r for r in rows if r["set"] == "decline"]}
     out = {"strategies": {}, "note": "accuracy = share of questions whose used answer passed the grader; cost per 1,000 questions at hosted Standard prices"}
@@ -147,8 +157,8 @@ def main() -> int:
     miss = [r for r in ans if not r["local"]["passed"] and r["hosted"]["passed"] and route(r["question"], 1).target == LOCAL]
     L += [f"Hosted right, local wrong, and the rules kept it local ({len(miss)}):", ""] + [f"- {r['qid']} ({r['category']}): {r['question']}" for r in miss[:12]]
     out["missed_ids"] = [r["qid"] for r in miss]
-    (ROOT / "docs" / "results" / "routing.md").write_text("\n".join(L) + "\n", encoding="utf-8")
-    (ROOT / "docs" / "results" / "routing.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    (ROOT / "docs" / "results" / f"routing{suffix}.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    (ROOT / "docs" / "results" / f"routing{suffix}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print("\n".join(L))
     return 0
 

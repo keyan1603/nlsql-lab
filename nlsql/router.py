@@ -69,14 +69,20 @@ def route(question: str, threshold: int = 1) -> Route:
     return Route(LOCAL, hit, "routine question" if not hit else "one weak cue, kept local")
 
 
-def escalate(kind: str, outcome_status: str) -> str | None:
+def escalate(kind: str, outcome_status: str, question: str | None = None, sql: str | None = None) -> str | None:
     """Why a local answer should be redone by the frontier model, or None to accept it.
     kind: what the local model produced ('sql', 'refusal', 'clarify'); outcome_status: how the query ran
-    ('ok', 'error', 'empty', 'n/a' for a non-query)."""
+    ('ok', 'error', 'empty', 'n/a' for a non-query). When question and sql are given, a query that filters on a number or date the
+    question never states (an invented filter, see nlsql/invented.py) is escalated too."""
     if kind in ("refusal", "clarify"):
         return "the local model declined"
     if outcome_status == "error":
         return "the database rejected the local query"
     if outcome_status == "empty":
         return "the local query returned no rows"
+    if question is not None and sql and kind == "sql":
+        from nlsql.invented import invented_values
+        inv = invented_values(question, sql)
+        if inv:
+            return "the local query filters on a value the question does not state: " + ", ".join(inv)
     return None
