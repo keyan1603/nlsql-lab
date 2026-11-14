@@ -1,0 +1,75 @@
+{
+ "note": "Worked examples for the XiYan prompt, drawn from the training pairs only (seed 7) and cleared by LeakFilter and the held-out-cell rule against the core, hard, hard2 and decline sets. Built by scripts/make_xiyan_shots.py.",
+ "examples": [
+  {
+   "id": "X01",
+   "question": "What was the weather forecast and temperature in Singapore on the day shipment S-8003 left the warehouse?",
+   "decline": "-- UNANSWERABLE: Historical weather data is not tracked for shipment dates or locations."
+  },
+  {
+   "id": "X02",
+   "question": "What is the manufacturer's warranty length in months for product ELC-026?",
+   "decline": "-- UNANSWERABLE: Product warranty duration terms are not captured in the product catalog."
+  },
+  {
+   "id": "X03",
+   "question": "Which promotion generated the highest net profit after factoring in product costs?",
+   "decline": "-- UNANSWERABLE: Product acquisition or manufacturing costs are absent from the product catalog, making profit margin calculations by promotion impossible."
+  },
+  {
+   "id": "X04",
+   "question": "What was the total order amount processed?",
+   "decline": "-- CLARIFY: Which currency and date interval should I sum up, and should I include cancelled or returned orders?"
+  },
+  {
+   "id": "X05",
+   "question": "Give me the summary for employee E-006.",
+   "decline": "-- CLARIFY: Do you want a summary of support tickets assigned to E-006, refund requests approved by them, or ticket events they performed?"
+  },
+  {
+   "id": "X06",
+   "question": "How do our inventory values look today?",
+   "decline": "-- CLARIFY: Would you like inventory valued using list prices, total on-hand quantities, or filtered by specific warehouses and product categories?"
+  },
+  {
+   "id": "X07",
+   "question": "Show the refund request ID and the full name of the employee who decided on the refund, for requests where the reason code was damaged goods.",
+   "sql": "SELECT t1.rfd_id, t2.emp_nm FROM refund_req AS t1 JOIN emp AS t2 ON t1.approver_emp_id = t2.emp_id WHERE t1.reason_cd = 'DMG'"
+  },
+  {
+   "id": "X08",
+   "question": "For customers who signed up in 2022, show their customer ID, signup date, and the date of the previous customer signup in the master list using LAG, ordered by signup date.",
+   "sql": "SELECT cust_id, signup_dt, LAG(signup_dt, 1) OVER (ORDER BY signup_dt, cust_id) as prev_signup_dt FROM cust_master WHERE signup_dt >= '2022-01-01' AND signup_dt <= '2022-12-31' ORDER BY signup_dt, cust_id"
+  },
+  {
+   "id": "X09",
+   "question": "List the employee id and name of any manager whose direct reports outnumber the average number of direct reports across all managers who have at least one report.",
+   "sql": "SELECT t2.emp_id, t2.emp_nm FROM emp AS t1 JOIN emp AS t2 ON t1.mgr_emp_id = t2.emp_id GROUP BY t2.emp_id, t2.emp_nm HAVING COUNT(t1.emp_id) > (SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM emp WHERE mgr_emp_id IS NOT NULL GROUP BY mgr_emp_id) AS sub) ORDER BY t2.emp_id"
+  },
+  {
+   "id": "X10",
+   "question": "Retrieve the shipment ID, order ID, and carrier code for shipments where the carrier code matches the alphabetical maximum carrier code present in the shipment table.",
+   "sql": "SELECT ship_id, ord_id, carrier_cd FROM shipment WHERE carrier_cd = (SELECT MAX(carrier_cd) FROM shipment) ORDER BY ship_id"
+  },
+  {
+   "id": "X11",
+   "question": "Show the channel code and the total count of support tickets for each channel.",
+   "sql": "SELECT channel_cd, COUNT(*) AS cnt FROM support_tkt GROUP BY channel_cd ORDER BY cnt DESC, channel_cd ASC"
+  },
+  {
+   "id": "X12",
+   "question": "Give me the total number of stock movements recorded for each movement type across all warehouses.",
+   "sql": "SELECT mv_type, COUNT(*) AS move_count FROM inv_move GROUP BY mv_type"
+  },
+  {
+   "id": "X13",
+   "question": "Identify products that are supplied by more than one supplier, listing their SKU and the count of distinct suppliers, ordered by supplier count descending then SKU.",
+   "sql": "SELECT sku, COUNT(DISTINCT sup_id) AS supplier_count FROM prod_supplier GROUP BY sku HAVING COUNT(DISTINCT sup_id) > 1 ORDER BY supplier_count DESC, sku"
+  },
+  {
+   "id": "X14",
+   "question": "For each warehouse serving the North America region, list the warehouse name, the total number of inventory SKUs held, and the sum of on-hand quantities, sorted by warehouse name.",
+   "sql": "SELECT w.wh_nm, COUNT(i.sku) AS sku_count, SUM(i.on_hand_qty) AS total_on_hand FROM warehouse w JOIN inventory i ON w.wh_id = i.wh_id WHERE w.region_cd = 'NA' GROUP BY w.wh_id, w.wh_nm ORDER BY w.wh_nm ASC"
+  }
+ ]
+}

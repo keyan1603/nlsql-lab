@@ -33,6 +33,12 @@ from nlsql.schema_link import m_schema, parse_schema, select_tables, tokens
 from nlsql.schema_text import schema_for_prompt
 
 FEWSHOT_FILE = ROOT / "data" / "fewshot.json"
+XSHOTS_FILE = ROOT / "data" / "xiyan_shots.json"
+DIALECT_RULES = """Extra rules:
+- Write MySQL 8 only: DATE_FORMAT, DATEDIFF, TIMESTAMPDIFF, DATE_SUB. Never SQLite or SQL Server functions (strftime, julianday, DATEADD, GETDATE, TOP).
+- Add no condition, limit, column or ordering that the question does not ask for. Use exactly the numbers and dates it gives.
+- Do not use a reserved word as an alias.
+"""
 SAMPLE_TEMPERATURE = 0.7
 
 
@@ -46,14 +52,18 @@ class Options:
     vote: int = 1                  # candidates; 1 means no voting
     extended: bool = True          # 22 tables (stress set) or the 11 core tables
     comments: bool = True
+    dialect: bool = False          # add the MySQL-dialect and "add nothing the question does not say" rules (tuned prompt)
+    decline_shots: int = 0         # worked CLARIFY / UNANSWERABLE replies from data/xiyan_shots.json (balanced, fixed order)
+    answer_shots: int = 0          # worked answerable examples from the same file, chosen by similarity among those whose tables are shown
 
     @property
     def baseline(self) -> bool:
-        return self.prompt == "plain" and not self.prune and not self.fewshot and not self.retry and self.vote <= 1
+        return (self.prompt == "plain" and not self.prune and not self.fewshot and not self.retry and self.vote <= 1
+                and not self.dialect and not self.decline_shots and not self.answer_shots)
 
     def tag(self) -> str:
         parts = [self.prompt] + ([f"prune{self.prune}"] if self.prune else []) + ([f"fs{self.fewshot}"] if self.fewshot else []) \
-            + ([f"retry{self.retry}" + ("e" if self.retry_empty else "")] if self.retry else []) + ([f"vote{self.vote}"] if self.vote > 1 else [])
+            + ([f"retry{self.retry}" + ("e" if self.retry_empty else "")] if self.retry else []) + ([f"vote{self.vote}"] if self.vote > 1 else [])             + (["dialect"] if self.dialect else []) + ([f"dshots{self.decline_shots}"] if self.decline_shots else []) + ([f"ashots{self.answer_shots}"] if self.answer_shots else [])
         return "-".join(parts)
 
 
@@ -73,6 +83,16 @@ def _tables_of(sql: str) -> list[str]:
     tree = sqlglot.parse_one(sql, read="mysql")
     ctes = {c.alias_or_name for c in tree.find_all(exp.CTE)}
     return sorted({t.name for t in tree.find_all(exp.Table)} - ctes)
+
+
+def xiyan_shots(decline: int, answer: int, question: str, shown: set) -> list[dict]:
+    """Decline examples (alternating UNANSWERABLE / CLARIFY, fixed order) first, then the answerable ones most similar to the question."""
+    pool = json.loads(XSHOTS_FILE.read_text(encoding="utf-8"))["examples"]
+    us = [e for e in pool if e.get("decline", "").startswith("-- UNANSWERABLE")]
+    cs = [e for e in pool if e.get("decline", "").startswith("-- CLARIFY")]
+    declines = [x for pair in zip(us, cs) for x in pair][:decline]
+    answerable = [dict(e, tables=_tables_of(e["sql"])) for e in pool if e.get("sql")]
+    return pick_examples(question, answer, shown, answerable)[:answer] + declines if answer else declines
 
 
 def load_fewshot() -> list[dict]:
@@ -104,21 +124,36 @@ def _ddl_subset(names: set, include_comments: bool, extended: bool) -> str:
     return "\n\n".join(b for b in blocks if (m := re.match(r"CREATE TABLE (\w+)", b)) and m.group(1) in names)
 
 
+def _turns(shots: list[dict]) -> list[dict]:
+    out = []
+    for e in shots:
+        out.append({"role": "user", "content": e["question"]})
+        out.append({"role": "assistant", "content": "```sql\n" + e["sql"] + "\n```" if e.get("sql") else e["decline"]})
+    return out
+
+
 def build(question: str, opts: Options) -> tuple[list[dict], dict]:
     """The messages for one question and a record of what was shown."""
     if opts.prompt == "tuned":
-        return build_tuned_messages(question), {"tables": "likely tables, compact", "fewshot": []}
+        from nlsql.prompts import tuned_system, tuned_tables
+        system = tuned_system(question)
+        if opts.dialect:
+            system = system.replace("\nSchema (the tables", "\n" + DIALECT_RULES + "\nSchema (the tables", 1)
+        names = tuned_tables(question)
+        shots = xiyan_shots(opts.decline_shots, opts.answer_shots, question, names)
+        messages = [{"role": "system", "content": system}] + _turns(shots) + [{"role": "user", "content": question}]
+        return messages, {"tables": "likely tables, compact", "fewshot": [e["id"] for e in shots]}
     if opts.baseline:
         return build_messages(question, opts.comments, opts.extended), {"tables": "all", "fewshot": []}
     tables = parse_schema(opts.extended)
     chosen = select_tables(question, tables, opts.prune) if opts.prune else tables
     names = {t.name for t in chosen}
     schema = m_schema(chosen) if opts.prompt == "mschema" else (_ddl_subset(names, opts.comments, opts.extended) if opts.prune else schema_for_prompt(opts.comments, opts.extended))
-    messages = [{"role": "system", "content": f"{RULES}\nDatabase schema (MySQL):\n\n{schema}\n"}]
+    rules = RULES + ("\n" + DIALECT_RULES if opts.dialect else "")
+    messages = [{"role": "system", "content": f"{rules}\nDatabase schema (MySQL):\n\n{schema}\n"}]
     shots = pick_examples(question, opts.fewshot, names) if opts.fewshot else []
-    for e in shots:
-        messages.append({"role": "user", "content": e["question"]})
-        messages.append({"role": "assistant", "content": f"```sql\n{e['sql']}\n```" if e.get("sql") else e["decline"]})
+    shots = shots + (xiyan_shots(opts.decline_shots, opts.answer_shots, question, names) if (opts.decline_shots or opts.answer_shots) else [])
+    messages += _turns(shots)
     messages.append({"role": "user", "content": question})
     return messages, {"tables": sorted(names), "fewshot": [e["id"] for e in shots]}
 

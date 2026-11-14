@@ -91,3 +91,40 @@ def chat_example(system: str, question: str, reply: str) -> dict:
 def sql_reply(sql: str) -> str:
     """The assistant's training target for an answerable question: exactly the shape the prompt's rule 1 asks for."""
     return f"```sql\n{sql.strip().rstrip(';').strip()}\n```"
+
+
+NULL, NOTNULL = "NULL", "NOTNULL"
+
+
+def filter_cells(sql: str, columns_by_table: dict) -> set:
+    """The (table, column, value) cells a query filters on with `=`, `IN` or `IS [NOT] NULL`. Aliases are resolved to tables; an unqualified
+    column counts for every table in the query that has a column of that name. Used to keep training examples off the cells a test uses."""
+    try:
+        tree = sqlglot.parse_one(sql, read="mysql")
+    except Exception:
+        return set()
+    alias = {(t.alias or t.name): t.name for t in tree.find_all(exp.Table)}
+    names = set(alias.values())
+    cells: set = set()
+
+    def put(c, v):
+        if c.table and c.table in alias:
+            tabs = {alias[c.table]}
+        else:
+            tabs = {t for t in names if c.name in columns_by_table.get(t, ())}
+        cells.update((t, c.name, v) for t in tabs)
+    for n in tree.find_all(exp.EQ):
+        a, b = n.this, n.expression
+        if isinstance(b, exp.Column):
+            a, b = b, a
+        if isinstance(a, exp.Column) and isinstance(b, exp.Literal):
+            put(a, str(b.this))
+    for n in tree.find_all(exp.In):
+        if isinstance(n.this, exp.Column):
+            for e in n.expressions:
+                if isinstance(e, exp.Literal):
+                    put(n.this, str(e.this))
+    for n in tree.find_all(exp.Is):
+        if isinstance(n.this, exp.Column) and isinstance(n.expression, exp.Null):
+            put(n.this, NOTNULL if isinstance(n.parent, exp.Not) else NULL)
+    return cells

@@ -217,39 +217,12 @@ def test_cells() -> set:
     """(table, column, value) cells that any test gold query filters on, so training never uses them. Aliases are resolved to tables;
     an unqualified column counts for every table in the query that has a column of that name."""
     from nlsql.schema_link import parse_schema
+    from nlsql.traindata import filter_cells
     cols = {t.name: {c.name for c in t.columns} for t in parse_schema(True)}
     cells = set()
     for q in tests_for_leaks():
-        if not q.get("gold_sql"):
-            continue
-        try:
-            tree = sqlglot.parse_one(q["gold_sql"], read="mysql")
-        except Exception:
-            continue
-        alias = {(t.alias or t.name): t.name for t in tree.find_all(exp.Table)}
-        names = set(alias.values())
-
-        def tables_for(c):
-            if c.table and c.table in alias:
-                return {alias[c.table]}
-            return {t for t in names if c.name in cols.get(t, ())}
-
-        def put(c, v):
-            cells.update((t, c.name, v) for t in tables_for(c))
-        for n in tree.find_all(exp.EQ):
-            a, b = n.this, n.expression
-            if isinstance(b, exp.Column):
-                a, b = b, a
-            if isinstance(a, exp.Column) and isinstance(b, exp.Literal):
-                put(a, str(b.this))
-        for n in tree.find_all(exp.In):
-            if isinstance(n.this, exp.Column):
-                for e in n.expressions:
-                    if isinstance(e, exp.Literal):
-                        put(n.this, str(e.this))
-        for n in tree.find_all(exp.Is):
-            if isinstance(n.this, exp.Column) and isinstance(n.expression, exp.Null):
-                put(n.this, NOTNULL if isinstance(n.parent, exp.Not) else NULL)
+        if q.get("gold_sql"):
+            cells |= filter_cells(q["gold_sql"], cols)
     return cells
 
 

@@ -46,6 +46,15 @@ TUNED_TABLES = 5
 _TABLES = None
 
 
+def tuned_tables(question: str) -> set:
+    """Names of the tables tuned_system shows for this question."""
+    global _TABLES
+    from nlsql.schema_link import parse_schema, select_tables
+    if _TABLES is None:
+        _TABLES = parse_schema(True)
+    return {t.name for t in select_tables(question, _TABLES, TUNED_TABLES)}
+
+
 def tuned_system(question: str, extra_tables: tuple = ()) -> str:
     """The rules plus the compact description of the tables the question probably needs (selected without the answer), in schema-file order.
     extra_tables adds tables by name; training uses it to make sure the tables the answer needs are shown, inference never does."""
