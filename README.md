@@ -58,8 +58,11 @@ Models are served by LM Studio (free of charge; its terms allow work use as of i
 |---|---|---|---|---|---|
 | XiYanSQL-QwenCoder-7B-2504 (SQL specialist, 7B) | **42 (85.7%)** | 1 | 0 | 8.8 | 2 of 55 (bare statement 53) |
 | Arctic-Text2SQL-R1-7B (SQL specialist, 7B) | 40 (81.6%) | 0 | 8 | 73.8 | 55 of 55 |
+| OmniSQL-7B (SQL specialist, 7B; added later, same prompt) | 38 (77.6%) | 0 | 10 | 71.2 | 55 of 55 |
 | Qwen3-4B-Instruct-2507 (general model, 4B) | 38 (77.5%) | 3 | 2 | 2.2 | 54 of 55 |
 | Qwen-3-4b-Text_to_SQL (SQL fine-tune of that same 4B model) | 34 (69.4%) | 0 | 3 | 5.9 | 0 of 55 |
+
+OmniSQL-7B was scored on the decline set as well: it answered all 24 questions that should be declined (0 of 24) and got 9 of the 12 answerable controls. Eight of its ten core errors are the same SQLite date functions (`strftime`, `julianday`) that Arctic used. Single run.
 
 What the four runs showed (evidence in `docs/results/models/`):
 
