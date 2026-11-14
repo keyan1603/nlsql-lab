@@ -13,3 +13,4 @@ train/*.log
 train/base3b/
 train/*.out
 train/*.done
+train/specialists/
