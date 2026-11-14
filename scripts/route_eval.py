@@ -95,7 +95,7 @@ def main() -> int:
     all_local, all_front = (lambda r: LOCAL), (lambda r: FRONTIER)
     rule = lambda t: (lambda r: route(r["question"], t).target)
     S = {
-        "All local (tuned 3B + retry)": strategy(all_local, never),
+        f"All local ({LOCAL_RUN})": strategy(all_local, never),
         "All hosted (gemini-3.5-flash-lite)": strategy(all_front, never),
         "Rules, 1+ family": strategy(rule(1), never),
         "Rules, 2+ families": strategy(rule(2), never),
@@ -109,7 +109,7 @@ def main() -> int:
     pools = {"core + stress (181 questions)": [r for r in rows if r["set"] != "decline"], "decline set (36 questions)": [r for r in rows if r["set"] == "decline"]}
     out = {"strategies": {}, "note": "accuracy = share of questions whose used answer passed the grader; cost per 1,000 questions at hosted Standard prices"}
     L = ["# Routing: which model answers", "",
-         f"Measured on the saved answers of the local tuned 3B model (`{LOCAL_RUN}`: up to two repair attempts) and the hosted gemini-3.5-flash-lite (`{HOSTED_RUN}`), "
+         f"Measured on the saved answers of the local model run `{LOCAL_RUN}` and the hosted gemini-3.5-flash-lite (`{HOSTED_RUN}`), "
          "same questions, same grader. A strategy only picks which saved answer is used. Hosted answers are single runs (not bit-repeatable).", ""]
     for pname, pool in pools.items():
         n = len(pool)

@@ -1,0 +1,62 @@
+{
+ "XiYan plain prompt": {
+  "dev": 16,
+  "dev_declines": 8,
+  "dev2": 13,
+  "hard": 41
+ },
+ "mschema prompt": {
+  "dev": 16,
+  "dev_declines": 5,
+  "dev2": 12,
+  "hard": null
+ },
+ "tuned prompt": {
+  "dev": 17,
+  "dev_declines": 6,
+  "dev2": 14,
+  "hard": 36
+ },
+ "tuned + dialect rules": {
+  "dev": 17,
+  "dev_declines": 8,
+  "dev2": 14,
+  "hard": 39
+ },
+ "tuned + 4 decline examples (d4)": {
+  "dev": 17,
+  "dev_declines": 5,
+  "dev2": 12,
+  "hard": 45
+ },
+ "tuned + dialect + d4": {
+  "dev": 17,
+  "dev_declines": 5,
+  "dev2": 13,
+  "hard": 43
+ },
+ "tuned + dialect + d6": {
+  "dev": 17,
+  "dev_declines": 6,
+  "dev2": 10,
+  "hard": 38
+ },
+ "tuned + dialect + d6 + 2 answer examples": {
+  "dev": 17,
+  "dev_declines": 9,
+  "dev2": 12,
+  "hard": 40
+ },
+ "tuned + d4 + retry 2 (FINAL)": {
+  "dev": 17,
+  "dev_declines": 5,
+  "dev2": 13,
+  "hard": 46
+ },
+ "tuned + d4 + decline guard (rejected)": {
+  "dev": 14,
+  "dev_declines": 9,
+  "dev2": 10,
+  "hard": 38
+ }
+}

@@ -1,0 +1,146 @@
+{
+ "XiYan 7B Q4_K_M, plain prompt / core": {
+  "correct": 42,
+  "n": 49,
+  "declined": 1,
+  "should_decline": 6,
+  "wrongly_refused": 0,
+  "wrongly_answered": 4,
+  "mean_s": 7.82
+ },
+ "XiYan 7B, final (tuned prompt + 4 decline examples + retry 2) / core": {
+  "correct": 43,
+  "n": 49,
+  "declined": 1,
+  "should_decline": 6,
+  "wrongly_refused": 0,
+  "wrongly_answered": 5,
+  "mean_s": 8.13
+ },
+ "Tuned Qwen2.5-Coder-3B (run 6 + retry 2) / core": {
+  "correct": 38,
+  "n": 49,
+  "declined": 6,
+  "should_decline": 6,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 11.53
+ },
+ "gemini-3.5-flash-lite (hosted, plain prompt) / core": {
+  "correct": 45,
+  "n": 49,
+  "declined": 5,
+  "should_decline": 6,
+  "wrongly_refused": 0,
+  "wrongly_answered": 1,
+  "mean_s": 4.5
+ },
+ "XiYan 7B Q4_K_M, plain prompt / hard": {
+  "correct": 41,
+  "n": 72,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 17.54
+ },
+ "XiYan 7B, final (tuned prompt + 4 decline examples + retry 2) / hard": {
+  "correct": 46,
+  "n": 72,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 15.19
+ },
+ "Tuned Qwen2.5-Coder-3B (run 6 + retry 2) / hard": {
+  "correct": 29,
+  "n": 72,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 2,
+  "wrongly_answered": 0,
+  "mean_s": 34.43
+ },
+ "gemini-3.5-flash-lite (hosted, plain prompt) / hard": {
+  "correct": 64,
+  "n": 72,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 5.06
+ },
+ "XiYan 7B Q4_K_M, plain prompt / hard2": {
+  "correct": 30,
+  "n": 54,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 16.3
+ },
+ "XiYan 7B, final (tuned prompt + 4 decline examples + retry 2) / hard2": {
+  "correct": 35,
+  "n": 54,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 14.93
+ },
+ "Tuned Qwen2.5-Coder-3B (run 6 + retry 2) / hard2": {
+  "correct": 31,
+  "n": 54,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 3,
+  "wrongly_answered": 0,
+  "mean_s": 34.11
+ },
+ "gemini-3.5-flash-lite (hosted, plain prompt) / hard2": {
+  "correct": 46,
+  "n": 54,
+  "declined": 0,
+  "should_decline": 0,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 6.12
+ },
+ "XiYan 7B Q4_K_M, plain prompt / decline": {
+  "correct": 12,
+  "n": 12,
+  "declined": 7,
+  "should_decline": 24,
+  "wrongly_refused": 0,
+  "wrongly_answered": 15,
+  "mean_s": 4.83
+ },
+ "XiYan 7B, final (tuned prompt + 4 decline examples + retry 2) / decline": {
+  "correct": 11,
+  "n": 12,
+  "declined": 4,
+  "should_decline": 24,
+  "wrongly_refused": 0,
+  "wrongly_answered": 20,
+  "mean_s": 9.15
+ },
+ "Tuned Qwen2.5-Coder-3B (run 6 + retry 2) / decline": {
+  "correct": 12,
+  "n": 12,
+  "declined": 23,
+  "should_decline": 24,
+  "wrongly_refused": 0,
+  "wrongly_answered": 0,
+  "mean_s": 10.11
+ },
+ "gemini-3.5-flash-lite (hosted, plain prompt) / decline": {
+  "correct": 11,
+  "n": 12,
+  "declined": 23,
+  "should_decline": 24,
+  "wrongly_refused": 0,
+  "wrongly_answered": 1,
+  "mean_s": 6.13
+ }
+}

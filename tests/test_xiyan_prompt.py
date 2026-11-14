@@ -48,3 +48,21 @@ def test_filter_cells_resolves_aliases_in_and_null():
 def test_filter_cells_unqualified_column_and_bad_sql():
     assert filter_cells("SELECT 1 FROM cust_master WHERE tier_cd = 'P'", COLS) == {("cust_master", "tier_cd", "P")}
     assert filter_cells("SELEKT ((", COLS) == set()
+
+
+def test_guard_verdict_parses_and_fails_open(monkeypatch):
+    from nlsql import pipeline
+    from nlsql.llm import Completion
+    import inspect
+    fields = [f for f in inspect.signature(Completion).parameters]
+
+    def fake(text):
+        kw = {f: (text if f == "text" else 0 if f.startswith(("tokens", "latency")) else "" if f in ("finish_reason",) else {}) for f in fields}
+        return Completion(**kw)
+    for reply, want in [("MISSING - no rating column", "MISSING"), ("vague.", "VAGUE"), ("OK", "OK"), ("banana", "OK"), ("", "OK")]:
+        monkeypatch.setattr(pipeline.llm, "chat", lambda *a, **k: fake(reply))
+        assert pipeline.guard_verdict("m", Q)[0] == want
+
+
+def test_guard_option_in_tag_and_baseline():
+    assert Options(guard=True).tag().endswith("guard") and not Options(guard=True).baseline

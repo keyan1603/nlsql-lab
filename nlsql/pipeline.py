@@ -54,16 +54,17 @@ class Options:
     comments: bool = True
     dialect: bool = False          # add the MySQL-dialect and "add nothing the question does not say" rules (tuned prompt)
     decline_shots: int = 0         # worked CLARIFY / UNANSWERABLE replies from data/xiyan_shots.json (balanced, fixed order)
+    guard: bool = False            # a second model call that checks, before the answer is accepted, that the schema can answer the question
     answer_shots: int = 0          # worked answerable examples from the same file, chosen by similarity among those whose tables are shown
 
     @property
     def baseline(self) -> bool:
         return (self.prompt == "plain" and not self.prune and not self.fewshot and not self.retry and self.vote <= 1
-                and not self.dialect and not self.decline_shots and not self.answer_shots)
+                and not self.guard and not self.dialect and not self.decline_shots and not self.answer_shots)
 
     def tag(self) -> str:
         parts = [self.prompt] + ([f"prune{self.prune}"] if self.prune else []) + ([f"fs{self.fewshot}"] if self.fewshot else []) \
-            + ([f"retry{self.retry}" + ("e" if self.retry_empty else "")] if self.retry else []) + ([f"vote{self.vote}"] if self.vote > 1 else [])             + (["dialect"] if self.dialect else []) + ([f"dshots{self.decline_shots}"] if self.decline_shots else []) + ([f"ashots{self.answer_shots}"] if self.answer_shots else [])
+            + ([f"retry{self.retry}" + ("e" if self.retry_empty else "")] if self.retry else []) + ([f"vote{self.vote}"] if self.vote > 1 else [])             + (["dialect"] if self.dialect else []) + ([f"dshots{self.decline_shots}"] if self.decline_shots else []) + ([f"ashots{self.answer_shots}"] if self.answer_shots else []) + (["guard"] if self.guard else [])
         return "-".join(parts)
 
 
@@ -210,6 +211,23 @@ def one_candidate(model: str, messages: list[dict], opts: Options, conn, max_tok
     return best[0], best[1], best[2], dict(tin=tin, tout=tout, lat=lat, finish=finish, stats=stats), log
 
 
+GUARD_SYSTEM = """You check whether a database can answer a business question. You are given the question and the relevant tables.
+Reply with exactly one word:
+OK - every fact, column and measure the question needs exists in the tables, and the question is specific enough to answer without guessing.
+MISSING - the question asks for something the tables do not hold (a measure, attribute or event that has no column).
+VAGUE - the question could mean several different things (which measure, period, ranking or group is not stated) and any query would be a guess."""
+
+
+def guard_verdict(model: str, question: str, max_tokens: int = 8) -> tuple[str, int, float]:
+    """('OK' | 'MISSING' | 'VAGUE', tokens, seconds). An unreadable reply counts as OK, so a failed check never blocks an answer."""
+    from nlsql.prompts import tuned_system
+    tables = "Schema (the tables" + tuned_system(question).split("Schema (the tables", 1)[1]
+    msgs = [{"role": "system", "content": GUARD_SYSTEM + "\n\n" + tables}, {"role": "user", "content": question}]
+    c = llm.chat(model, msgs, max_tokens=max_tokens)
+    word = (c.text.strip().split() or ["OK"])[0].strip(".:,;-").upper()
+    return (word if word in ("OK", "MISSING", "VAGUE") else "OK"), c.tokens_in + c.tokens_out, c.latency_s
+
+
 def solve(model: str, question: str, opts: Options, conn=None, max_tokens: int = 1024) -> Result:
     messages, shown = build(question, opts)
     candidates = []
@@ -234,5 +252,13 @@ def solve(model: str, question: str, opts: Options, conn=None, max_tokens: int =
             best_group = max(groups.values(), key=lambda g: (len(g), -g[0]))
             chosen = candidates[best_group[0]]
             votes = sorted((len(g) for g in groups.values()), reverse=True)
-    info = {**shown, "calls": sum(len(c["log"]) for c in candidates), "attempts": [c["log"] for c in candidates] if (opts.retry or n > 1) else None, "votes": votes}
+    guard_info = None
+    if opts.guard and extract(chosen["text"]).kind == "sql":
+        verdict, gtok, glat = guard_verdict(model, question)
+        guard_info = {"verdict": verdict, "tokens": gtok}
+        totals["lat"] += glat
+        if verdict != "OK":
+            text = "-- UNANSWERABLE: the schema does not hold what the question asks for" if verdict == "MISSING" else "-- CLARIFY: the question is too vague; which measure, period or group do you mean?"
+            chosen = dict(chosen, text=text)
+    info = {**shown, "guard": guard_info, "calls": sum(len(c["log"]) for c in candidates), "attempts": [c["log"] for c in candidates] if (opts.retry or n > 1) else None, "votes": votes}
     return Result(chosen["text"], totals["lat"], totals["tin"], totals["tout"], "", {}, info)

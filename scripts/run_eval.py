@@ -49,6 +49,7 @@ def main() -> int:
     ap.add_argument("--dialect", action="store_true", help="add the MySQL-dialect / add-nothing-extra rules to the prompt")
     ap.add_argument("--decline-shots", type=int, default=0, help="worked CLARIFY / UNANSWERABLE replies (data/xiyan_shots.json, 0 to 6)")
     ap.add_argument("--answer-shots", type=int, default=0, help="worked answerable examples (data/xiyan_shots.json, 0 to 8)")
+    ap.add_argument("--guard", action="store_true", help="after the answer, ask the model whether the schema can answer the question; replace the answer with a decline if not")
     ap.add_argument("--retry", type=int, default=0, help="repair attempts after a database error")
     ap.add_argument("--retry-empty", action="store_true", help="also retry when the query returns no rows")
     ap.add_argument("--vote", type=int, default=1, help="candidates to sample; the most common result wins")
@@ -60,7 +61,7 @@ def main() -> int:
     out_path = RUNS / f"{args.label}.jsonl"
     saved = {} if args.fresh else load_records(out_path)
     extended = args.set in ("hard", "hard2", "decline", "dev", "dev2")
-    opts = Options(prompt=args.prompt, prune=args.prune, fewshot=args.fewshot, dialect=args.dialect, decline_shots=args.decline_shots, answer_shots=args.answer_shots, retry=args.retry, retry_empty=args.retry_empty, vote=args.vote,
+    opts = Options(prompt=args.prompt, prune=args.prune, fewshot=args.fewshot, dialect=args.dialect, guard=args.guard, decline_shots=args.decline_shots, answer_shots=args.answer_shots, retry=args.retry, retry_empty=args.retry_empty, vote=args.vote,
                    extended=extended, comments=args.schema == "comments")
     questions = load_questions(ROOT / "data" / {"core": "questions.json", "hard": "questions_hard.json", "hard2": "questions_hard2.json", "decline": "questions_decline.json", "dev": "dev_terse.json", "dev2": "dev_counter.json"}[args.set])
     if args.only:
