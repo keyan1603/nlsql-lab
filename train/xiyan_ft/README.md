@@ -18,7 +18,7 @@ The weights alone (about 5.6 GB) are larger than the card. Verdict: infeasible o
 
 ## What is in the package
 
-Run `python train/xiyan_ft/pack.py` (from the lab repo) to build `xiyan_ft_package.zip` (about 3 MB zipped, not committed):
+Run `python train/xiyan_ft/pack.py` (from the lab repo) to build `xiyan_ft_package.zip` (about 0.7 MB zipped, not committed):
 
 - `train_qlora_7b.py`: training script. bf16 where the GPU supports it, fp16 plus GradScaler on a T4 or P100. Saves an adapter after each epoch and every 20 steps, and can `--resume`.
 - `data/train.jsonl` (2,583 pairs, 2.21 M tokens, 0.15 M reply tokens), `data/val.jsonl` (195), `data/cont2_train.jsonl` (743 pairs, 0.62 M tokens), `data/cont2_val.jsonl` (237). Chat format, built with `nlsql.prompts.tuned_system` (compact rules plus the five most likely tables, about 430 tokens). Token counts use the Qwen2.5 tokenizer, which XiYan shares.
