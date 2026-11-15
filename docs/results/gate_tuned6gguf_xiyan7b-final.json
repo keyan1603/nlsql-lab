@@ -1,0 +1,296 @@
+{
+ "core + stress, answerable (181 questions)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 109,
+   "n": 181,
+   "usd_per_1000": 0.009
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 125,
+   "n": 181,
+   "usd_per_1000": 0.029
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 127,
+   "n": 181,
+   "usd_per_1000": 0.035
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 136,
+   "n": 181,
+   "usd_per_1000": 0.165
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 147,
+   "n": 181,
+   "usd_per_1000": 0.601
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 146,
+   "n": 181,
+   "usd_per_1000": 0.59
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 136,
+   "n": 181,
+   "usd_per_1000": 0.21
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 160,
+   "n": 181,
+   "usd_per_1000": 1.364
+  }
+ },
+ "decline set (36 questions: 12 controls, 24 should decline)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 36,
+   "n": 36,
+   "usd_per_1000": 0.003
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 15,
+   "n": 36,
+   "usd_per_1000": 0.021
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 35,
+   "n": 36,
+   "usd_per_1000": 0.008
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 35,
+   "n": 36,
+   "usd_per_1000": 0.008
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 35,
+   "n": 36,
+   "usd_per_1000": 0.082
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 35,
+   "n": 36,
+   "usd_per_1000": 0.045
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 35,
+   "n": 36,
+   "usd_per_1000": 0.008
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 34,
+   "n": 36,
+   "usd_per_1000": 1.343
+  }
+ },
+ "held-out set (52 questions)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 32,
+   "n": 52,
+   "usd_per_1000": 0.017
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 27,
+   "n": 52,
+   "usd_per_1000": 0.046
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 38,
+   "n": 52,
+   "usd_per_1000": 0.051
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 42,
+   "n": 52,
+   "usd_per_1000": 0.201
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 42,
+   "n": 52,
+   "usd_per_1000": 0.229
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 42,
+   "n": 52,
+   "usd_per_1000": 0.229
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 42,
+   "n": 52,
+   "usd_per_1000": 0.201
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 43,
+   "n": 52,
+   "usd_per_1000": 1.488
+  }
+ },
+ "held-out, routine (12)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 10,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.022
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 0.027
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 0.027
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 0.027
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 0.027
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 0.027
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 10,
+   "n": 12,
+   "usd_per_1000": 1.39
+  }
+ },
+ "held-out, complex (24)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 7,
+   "n": 24,
+   "usd_per_1000": 0.028
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 12,
+   "n": 24,
+   "usd_per_1000": 0.072
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 12,
+   "n": 24,
+   "usd_per_1000": 0.088
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 16,
+   "n": 24,
+   "usd_per_1000": 0.413
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 16,
+   "n": 24,
+   "usd_per_1000": 0.474
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 16,
+   "n": 24,
+   "usd_per_1000": 0.475
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 16,
+   "n": 24,
+   "usd_per_1000": 0.413
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 19,
+   "n": 24,
+   "usd_per_1000": 1.617
+  }
+ },
+ "held-out, should decline (12)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 0,
+   "n": 12,
+   "usd_per_1000": 0.026
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 12,
+   "n": 12,
+   "usd_per_1000": 0.006
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 11,
+   "n": 12,
+   "usd_per_1000": 1.331
+  }
+ },
+ "held-out, answerable controls (4)": {
+  "3B alone (tuned6gguf)": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.011
+  },
+  "7B alone (xiyan7b-final)": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.02
+  },
+  "3B decline gate + 7B SQL": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.031
+  },
+  "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.031
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.031
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.031
+  },
+  "3B gate first, then rules 2+, then 7B with escalation": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 0.031
+  },
+  "All hosted (gemini-3.5-flash-lite)": {
+   "correct": 3,
+   "n": 4,
+   "usd_per_1000": 1.483
+  }
+ }
+}

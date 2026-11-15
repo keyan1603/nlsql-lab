@@ -1,0 +1,517 @@
+{
+ "as_of": "2026-10-31",
+ "note": "The held-out set: written after the router rules and the invented-value check were frozen (git tag router-frozen), from the schema files only, with the phrasing of a business user and without reading the rules while writing. 12 routine, 24 complex (window 4, time_bucket 4, evidence 4, cte_multistep 3, set_ops 3, correlated 3, wide_schema 3), 6 unanswerable, 6 ambiguous and 4 answerable controls that look like the declines. Gold answers come from executing gold_sql on the seeded database.",
+ "questions": [
+  {
+   "id": "RT01",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many of our customers in Europe have an active account?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM cust_master WHERE region_cd = 'EU' AND is_actv = 1",
+   "tests": "region code and soft-delete flag"
+  },
+  {
+   "id": "RT02",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which product that is still sold has the highest list price? Give me its name and the price.",
+   "gold_sql": "SELECT prod_nm, list_prc FROM prod_catalog WHERE disc_flag = 0 ORDER BY list_prc DESC LIMIT 1",
+   "tests": "disc_flag means discontinued"
+  },
+  {
+   "id": "RT03",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many orders ended up cancelled?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM ord_hdr WHERE ord_status = 'C'",
+   "tests": "status code decoding"
+  },
+  {
+   "id": "RT04",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Give me the names of the active Gold customers based in North America.",
+   "gold_sql": "SELECT cust_nm FROM cust_master WHERE tier_cd = 'G' AND region_cd = 'NA' AND is_actv = 1",
+   "tests": "tier and region decoding"
+  },
+  {
+   "id": "RT05",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many units of SKU KIT-003 have been ordered in total?",
+   "gold_sql": "SELECT SUM(qty) AS units FROM ord_line WHERE sku = 'KIT-003'",
+   "tests": "single sum"
+  },
+  {
+   "id": "RT06",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Who bought on order O-5002, and for how much?",
+   "gold_sql": "SELECT c.cust_nm, o.ord_total_amt FROM ord_hdr o JOIN cust_master c ON c.cust_id = o.cust_id WHERE o.ord_id = 'O-5002'",
+   "tests": "one join, planted id"
+  },
+  {
+   "id": "RT07",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many support tickets came in over the phone?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM support_tkt WHERE channel_cd = 'PHN'",
+   "tests": "channel code"
+  },
+  {
+   "id": "RT08",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What do kitchen products cost on average?",
+   "gold_sql": "SELECT AVG(list_prc) AS avg_prc FROM prod_catalog WHERE categ_cd = 'KIT'",
+   "float_tol": 0.01,
+   "tests": "average over a category"
+  },
+  {
+   "id": "RT09",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many refund requests are still waiting for a decision?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM refund_req WHERE status_cd = 'P'",
+   "tests": "pending status"
+  },
+  {
+   "id": "RT10",
+   "category": "routine",
+   "difficulty": "easy",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the name of the warehouse that serves Latin America?",
+   "gold_sql": "SELECT wh_nm FROM warehouse WHERE region_cd = 'LA'",
+   "tests": "single lookup"
+  },
+  {
+   "id": "RT11",
+   "category": "routine",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many different products does Baltic Timber supply?",
+   "gold_sql": "SELECT COUNT(DISTINCT ps.sku) AS n FROM prod_supplier ps JOIN supplier s ON s.sup_id = ps.sup_id WHERE s.sup_nm = 'Baltic Timber'",
+   "tests": "one join, name filter"
+  },
+  {
+   "id": "RT12",
+   "category": "routine",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "List the ids of the orders paid for by gift card, without repeating an order.",
+   "gold_sql": "SELECT DISTINCT ord_id FROM payment WHERE method_cd = 'GC'",
+   "tests": "method code, distinct"
+  },
+  {
+   "id": "HO01",
+   "category": "window",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many days did each repeat customer wait between their 1st and 2nd purchase? Show the customer id and the number of days.",
+   "gold_sql": "WITH r AS (SELECT cust_id, ord_dt, ROW_NUMBER() OVER (PARTITION BY cust_id ORDER BY ord_dt, ord_id) AS rn FROM ord_hdr) SELECT a.cust_id, DATEDIFF(b.ord_dt, a.ord_dt) AS gap_days FROM r a JOIN r b ON b.cust_id = a.cust_id AND a.rn = 1 AND b.rn = 2",
+   "tests": "row number then self join on the numbers"
+  },
+  {
+   "id": "HO02",
+   "category": "window",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Who are the three biggest spenders in each sales region, counting only delivered USD orders? Show the region code, the customer id and the amount spent, and break ties by customer id.",
+   "gold_sql": "WITH t AS (SELECT c.region_cd, c.cust_id, SUM(o.ord_total_amt) AS spent FROM ord_hdr o JOIN cust_master c ON c.cust_id = o.cust_id WHERE o.ord_status = 'D' AND o.currency_cd = 'USD' GROUP BY c.region_cd, c.cust_id), r AS (SELECT region_cd, cust_id, spent, ROW_NUMBER() OVER (PARTITION BY region_cd ORDER BY spent DESC, cust_id) AS rn FROM t) SELECT region_cd, cust_id, spent FROM r WHERE rn <= 3",
+   "tests": "top 3 per group"
+  },
+  {
+   "id": "HO03",
+   "category": "window",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "For each USD order that is not a customer's first, how much bigger or smaller was its total than the order that same customer placed right before it? Use the order id to separate orders from the same day. Show the order id and the difference.",
+   "gold_sql": "SELECT ord_id, diff FROM (SELECT ord_id, ord_total_amt - LAG(ord_total_amt) OVER (PARTITION BY cust_id ORDER BY ord_dt, ord_id) AS diff FROM ord_hdr WHERE currency_cd = 'USD') x WHERE diff IS NOT NULL",
+   "tests": "lag within customer"
+  },
+  {
+   "id": "HO04",
+   "category": "window",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": true,
+   "question": "Give me a growing total of approved refund amounts, one row per approved refund, in the order the refunds were decided; use the refund id to separate refunds decided on the same day. Show the refund id, the decision date and the total so far.",
+   "gold_sql": "SELECT rfd_id, decided_dt, SUM(rfd_amt) OVER (ORDER BY decided_dt, rfd_id) AS total_so_far FROM refund_req WHERE status_cd = 'A' ORDER BY decided_dt, rfd_id",
+   "tests": "running sum"
+  },
+  {
+   "id": "HO05",
+   "category": "time_bucket",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Give me a month-by-month count of new support tickets from April through September 2026. Show the month as YYYY-MM and the count.",
+   "gold_sql": "SELECT DATE_FORMAT(opened_ts, '%Y-%m') AS m, COUNT(*) AS n FROM support_tkt WHERE opened_ts >= '2026-04-01' AND opened_ts < '2026-10-01' GROUP BY DATE_FORMAT(opened_ts, '%Y-%m')",
+   "tests": "monthly bucket, date range"
+  },
+  {
+   "id": "HO06",
+   "category": "time_bucket",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "At what time of day do phone tickets arrive? Count the phone tickets by the clock hour they were opened in, and keep only the hours with at least 3 tickets. Show the hour (0 to 23) and the count.",
+   "gold_sql": "SELECT HOUR(opened_ts) AS hr, COUNT(*) AS n FROM support_tkt WHERE channel_cd = 'PHN' GROUP BY HOUR(opened_ts) HAVING COUNT(*) >= 3",
+   "tests": "hour bucket with having"
+  },
+  {
+   "id": "HO07",
+   "category": "time_bucket",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How were website purchases spread over the days of the week? Show the weekday name and the number of purchase events.",
+   "gold_sql": "SELECT DAYNAME(evt_ts) AS weekday, COUNT(*) AS n FROM web_event WHERE evt_type = 'PURCHASE' GROUP BY DAYNAME(evt_ts)",
+   "tests": "weekday bucket on the large table"
+  },
+  {
+   "id": "HO08",
+   "category": "time_bucket",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Compare delivered USD order revenue for the 30 days from 2026-10-02 to 2026-10-31 with the 30 days from 2026-09-02 to 2026-10-01. Show the two totals side by side as recent_30 and earlier_30.",
+   "gold_sql": "SELECT SUM(CASE WHEN ord_dt BETWEEN '2026-10-02' AND '2026-10-31' THEN ord_total_amt END) AS recent_30, SUM(CASE WHEN ord_dt BETWEEN '2026-09-02' AND '2026-10-01' THEN ord_total_amt END) AS earlier_30 FROM ord_hdr WHERE ord_status = 'D' AND currency_cd = 'USD' AND ord_dt BETWEEN '2026-09-02' AND '2026-10-31'",
+   "tests": "two windows of days in one row"
+  },
+  {
+   "id": "HO09",
+   "category": "evidence",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "We treat a customer as lapsed when more than 90 days have gone by since they last bought anything, measured up to 2026-10-31. How many active customers who have placed at least one order are lapsed?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM (SELECT c.cust_id FROM cust_master c JOIN ord_hdr o ON o.cust_id = c.cust_id WHERE c.is_actv = 1 GROUP BY c.cust_id HAVING DATEDIFF('2026-10-31', MAX(o.ord_dt)) > 90) t",
+   "tests": "definition with a reference date"
+  },
+  {
+   "id": "HO10",
+   "category": "evidence",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "For this report a large basket is any order totalling at least 1,500 in its own currency. How many large baskets did Platinum customers place?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM ord_hdr o JOIN cust_master c ON c.cust_id = o.cust_id WHERE c.tier_cd = 'P' AND o.ord_total_amt >= 1500",
+   "tests": "definition plus tier decoding"
+  },
+  {
+   "id": "HO11",
+   "category": "evidence",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Critical tickets must be closed within the SLA hours that the policy table shows for 2026-10-31. How many closed critical tickets took longer than that many hours (compare the exact elapsed time) to close?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM support_tkt t WHERE t.sev_lvl = 1 AND t.closed_ts IS NOT NULL AND TIMESTAMPDIFF(MINUTE, t.opened_ts, t.closed_ts) > 60 * (SELECT CAST(rule_val AS UNSIGNED) FROM policy_rule WHERE rule_key = 'sla_hours_sev1' AND eff_from <= '2026-10-31' AND (eff_to IS NULL OR eff_to >= '2026-10-31'))",
+   "tests": "effective-dated policy value used as a threshold"
+  },
+  {
+   "id": "HO12",
+   "category": "evidence",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Net revenue means the order total minus the approved refunds on that order. What is the net revenue of USD orders placed in 2026, leaving out cancelled orders?",
+   "gold_sql": "SELECT (SELECT SUM(ord_total_amt) FROM ord_hdr WHERE currency_cd = 'USD' AND ord_dt >= '2026-01-01' AND ord_dt < '2027-01-01' AND ord_status <> 'C') - COALESCE((SELECT SUM(r.rfd_amt) FROM refund_req r JOIN ord_hdr o ON o.ord_id = r.ord_id WHERE r.status_cd = 'A' AND o.currency_cd = 'USD' AND o.ord_dt >= '2026-01-01' AND o.ord_dt < '2027-01-01' AND o.ord_status <> 'C'), 0) AS net_revenue",
+   "tests": "definition, avoid fan-out by separate subqueries"
+  },
+  {
+   "id": "HO13",
+   "category": "cte_multistep",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which customers have refund requests, of any status, adding up to more than a fifth of what they paid on delivered USD orders? Show the customer id, the refund total and the delivered order total.",
+   "gold_sql": "WITH sp AS (SELECT cust_id, SUM(ord_total_amt) AS spent FROM ord_hdr WHERE ord_status = 'D' AND currency_cd = 'USD' GROUP BY cust_id), rf AS (SELECT o.cust_id, SUM(r.rfd_amt) AS refunded FROM refund_req r JOIN ord_hdr o ON o.ord_id = r.ord_id WHERE o.currency_cd = 'USD' GROUP BY o.cust_id) SELECT sp.cust_id, rf.refunded, sp.spent FROM sp JOIN rf ON rf.cust_id = sp.cust_id WHERE rf.refunded > 0.2 * sp.spent",
+   "tests": "two aggregates compared"
+  },
+  {
+   "id": "HO14",
+   "category": "cte_multistep",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "For customers whose newest support ticket is still open, show the customer name and how many orders they have placed in total. Use the ticket id to separate tickets opened at the same moment.",
+   "gold_sql": "WITH n AS (SELECT cust_id, closed_ts, ROW_NUMBER() OVER (PARTITION BY cust_id ORDER BY opened_ts DESC, tkt_id DESC) AS rn FROM support_tkt) SELECT c.cust_nm, (SELECT COUNT(*) FROM ord_hdr o WHERE o.cust_id = c.cust_id) AS orders FROM n JOIN cust_master c ON c.cust_id = n.cust_id WHERE n.rn = 1 AND n.closed_ts IS NULL",
+   "tests": "pick one row per group, then count"
+  },
+  {
+   "id": "HO15",
+   "category": "cte_multistep",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Looking only at customers who have raised 3 or more tickets (open or closed), what is the average time to resolve a closed ticket, in hours, for each severity level? Show the severity and the average.",
+   "gold_sql": "WITH c AS (SELECT cust_id FROM support_tkt GROUP BY cust_id HAVING COUNT(*) >= 3) SELECT t.sev_lvl, AVG(TIMESTAMPDIFF(MINUTE, t.opened_ts, t.closed_ts) / 60) AS avg_hours FROM support_tkt t JOIN c ON c.cust_id = t.cust_id WHERE t.closed_ts IS NOT NULL GROUP BY t.sev_lvl",
+   "float_tol": 0.01,
+   "tests": "filter a group, then aggregate"
+  },
+  {
+   "id": "HO16",
+   "category": "set_ops",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which customers have bought kitchen products and office products as well? Show the customer ids.",
+   "gold_sql": "SELECT o.cust_id FROM ord_hdr o JOIN ord_line l ON l.ord_id = o.ord_id JOIN prod_catalog p ON p.sku = l.sku WHERE p.categ_cd IN ('KIT', 'OFC') GROUP BY o.cust_id HAVING COUNT(DISTINCT p.categ_cd) = 2",
+   "tests": "intersection through having"
+  },
+  {
+   "id": "HO17",
+   "category": "set_ops",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which customers raised a ticket in 2026 yet did not buy anything that year? Show the customer id and name.",
+   "gold_sql": "SELECT DISTINCT c.cust_id, c.cust_nm FROM support_tkt t JOIN cust_master c ON c.cust_id = t.cust_id WHERE t.opened_ts >= '2026-01-01' AND NOT EXISTS (SELECT 1 FROM ord_hdr o WHERE o.cust_id = c.cust_id AND o.ord_dt >= '2026-01-01' AND o.ord_dt < '2027-01-01')",
+   "tests": "anti join"
+  },
+  {
+   "id": "HO18",
+   "category": "set_ops",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which products were put in a cart on the website but do not appear on any order line? Show the SKUs.",
+   "gold_sql": "SELECT DISTINCT w.sku FROM web_event w WHERE w.evt_type = 'CART' AND w.sku IS NOT NULL AND w.sku NOT IN (SELECT sku FROM ord_line)",
+   "tests": "set difference across tables"
+  },
+  {
+   "id": "HO19",
+   "category": "correlated",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which USD orders were worth more than that customer's average USD order? Show the order id, the customer id and the total.",
+   "gold_sql": "SELECT o.ord_id, o.cust_id, o.ord_total_amt FROM ord_hdr o WHERE o.currency_cd = 'USD' AND o.ord_total_amt > (SELECT AVG(o2.ord_total_amt) FROM ord_hdr o2 WHERE o2.cust_id = o.cust_id AND o2.currency_cd = 'USD')",
+   "tests": "compare with the group mean"
+  },
+  {
+   "id": "HO20",
+   "category": "correlated",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which products are priced higher than the average product in their own category? Show the product name and the price.",
+   "gold_sql": "SELECT p.prod_nm, p.list_prc FROM prod_catalog p WHERE p.list_prc > (SELECT AVG(p2.list_prc) FROM prod_catalog p2 WHERE p2.categ_cd = p.categ_cd)",
+   "tests": "compare with the group mean"
+  },
+  {
+   "id": "HO21",
+   "category": "correlated",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Find the tickets that took longer to close than the average closed ticket of the same severity. Show the ticket id and the severity.",
+   "gold_sql": "SELECT t.tkt_id, t.sev_lvl FROM support_tkt t WHERE t.closed_ts IS NOT NULL AND TIMESTAMPDIFF(MINUTE, t.opened_ts, t.closed_ts) > (SELECT AVG(TIMESTAMPDIFF(MINUTE, t2.opened_ts, t2.closed_ts)) FROM support_tkt t2 WHERE t2.sev_lvl = t.sev_lvl AND t2.closed_ts IS NOT NULL)",
+   "tests": "compare with the group mean"
+  },
+  {
+   "id": "HO22",
+   "category": "wide_schema",
+   "difficulty": "hard",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "For the single product that Asia Pacific customers have ordered the most units of (break ties by SKU), which supplier is its primary one? Show the supplier name.",
+   "gold_sql": "SELECT s.sup_nm FROM prod_supplier ps JOIN supplier s ON s.sup_id = ps.sup_id WHERE ps.is_primary = 1 AND ps.sku = (SELECT l.sku FROM ord_line l JOIN ord_hdr o ON o.ord_id = l.ord_id JOIN cust_master c ON c.cust_id = o.cust_id WHERE c.region_cd = 'AP' GROUP BY l.sku ORDER BY SUM(l.qty) DESC, l.sku LIMIT 1)",
+   "tests": "five tables, region decoding, top 1"
+  },
+  {
+   "id": "HO23",
+   "category": "wide_schema",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many units of discontinued products are sitting in our European warehouse right now?",
+   "gold_sql": "SELECT SUM(i.on_hand_qty) AS units FROM inventory i JOIN prod_catalog p ON p.sku = i.sku JOIN warehouse w ON w.wh_id = i.wh_id WHERE p.disc_flag = 1 AND w.region_cd = 'EU'",
+   "tests": "inventory table not stock movements; disc_flag"
+  },
+  {
+   "id": "HO24",
+   "category": "wide_schema",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "How many payment attempts failed on orders that DHL went on to deliver?",
+   "gold_sql": "SELECT COUNT(*) AS n FROM payment p JOIN shipment s ON s.ord_id = p.ord_id WHERE p.pay_status = 'F' AND s.carrier_cd = 'DHL' AND s.ship_status = 'D'",
+   "tests": "two look-alike status columns"
+  },
+  {
+   "id": "HU01",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What do we pay a carrier on average to ship one parcel?",
+   "tests": "shipments hold carrier and dates, no cost"
+  },
+  {
+   "id": "HU02",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "Which customers have unsubscribed from our marketing emails?",
+   "tests": "no consent or subscription data"
+  },
+  {
+   "id": "HU03",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What did each product cost us to buy in, so I can see the profit margin?",
+   "tests": "list price only, no purchase cost"
+  },
+  {
+   "id": "HU04",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What satisfaction score did customers give after their tickets were closed?",
+   "tests": "no survey data"
+  },
+  {
+   "id": "HU05",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "Which sales representative owns each customer account?",
+   "tests": "customers have no owner column"
+  },
+  {
+   "id": "HU06",
+   "category": "unanswerable",
+   "difficulty": "medium",
+   "expected": "unanswerable",
+   "order_matters": false,
+   "question": "What are the delivery postcodes of our ten biggest orders?",
+   "tests": "no address data"
+  },
+  {
+   "id": "HM01",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Who are the customers we should call this week?",
+   "tests": "no criterion for who to call"
+  },
+  {
+   "id": "HM02",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Is our stock in good shape?",
+   "tests": "good by reorder point, coverage or movement; which warehouse"
+  },
+  {
+   "id": "HM03",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Which channel is strongest?",
+   "tests": "strongest by orders, revenue or tickets"
+  },
+  {
+   "id": "HM04",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Show me the unusual orders.",
+   "tests": "unusual has no definition"
+  },
+  {
+   "id": "HM05",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "How quickly are we resolving problems?",
+   "tests": "which problems, which measure, which period"
+  },
+  {
+   "id": "HM06",
+   "category": "ambiguous",
+   "difficulty": "medium",
+   "expected": "clarify",
+   "order_matters": false,
+   "question": "Break down our sales for me.",
+   "tests": "by what, which measure, which period"
+  },
+  {
+   "id": "HK01",
+   "category": "control",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which carrier handled the most shipments out of the Newark Hub? Show the carrier code and the number of shipments.",
+   "gold_sql": "SELECT s.carrier_cd, COUNT(*) AS n FROM shipment s JOIN warehouse w ON w.wh_id = s.wh_id WHERE w.wh_nm = 'Newark Hub' GROUP BY s.carrier_cd ORDER BY n DESC, s.carrier_cd LIMIT 1",
+   "tests": "control for HU01"
+  },
+  {
+   "id": "HK02",
+   "category": "control",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "What is the average number of hours billing tickets took to close? Only count tickets that have been closed.",
+   "gold_sql": "SELECT AVG(TIMESTAMPDIFF(MINUTE, opened_ts, closed_ts) / 60) AS avg_hours FROM support_tkt WHERE categ_cd = 'BILL' AND closed_ts IS NOT NULL",
+   "float_tol": 0.01,
+   "tests": "control for HM05"
+  },
+  {
+   "id": "HK03",
+   "category": "control",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Among delivered orders, which channel brought in the most? Show the channel code and how many.",
+   "gold_sql": "SELECT channel_cd, COUNT(*) AS n FROM ord_hdr WHERE ord_status = 'D' GROUP BY channel_cd ORDER BY n DESC, channel_cd LIMIT 1",
+   "tests": "control for HM03"
+  },
+  {
+   "id": "HK04",
+   "category": "control",
+   "difficulty": "medium",
+   "expected": "answer",
+   "order_matters": false,
+   "question": "Which employees recorded at least 3 escalation events on tickets? Show the employee id and the number of events.",
+   "gold_sql": "SELECT actor_emp_id, COUNT(*) AS n FROM tkt_event WHERE evt_type = 'ESCAL' AND actor_emp_id IS NOT NULL GROUP BY actor_emp_id HAVING COUNT(*) >= 3",
+   "tests": "control for HU05"
+  }
+ ]
+}

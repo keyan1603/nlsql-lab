@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from cost_model import ASSUMPTIONS, usd                      # noqa: E402
 from nlsql.invented import invented_values                   # noqa: E402
 from nlsql.router import FRONTIER, route                    # noqa: E402
-from route_eval import SETS, jl, sign_p, status_of, wilson   # noqa: E402
+from route_eval import HELDOUT, SETS, heldout_splits, jl, sign_p, status_of, wilson   # noqa: E402
 
 
 def arg(name: str, default: str) -> str:
@@ -34,13 +34,22 @@ def main() -> int:
     kwh = ASSUMPTIONS["usd_per_kwh"][0]
     sec_cost = lambda s: watts * s / 3600 / 1000 * kwh
     rows = []
-    for s, (hs, qf) in SETS.items():
+    for s, (hs, qf) in ((k, v) for k, v in SETS.items() if k != "heldout"):     # heldout is its own pool, loaded below
         d = json.loads((ROOT / "data" / f"{qf}.json").read_text(encoding="utf-8"))
         qs = {q["id"]: q for q in (d if isinstance(d, list) else d["questions"])}
         g, x, h = jl(ROOT / "runs" / f"{gate_run}-{s}.jsonl"), jl(ROOT / "runs" / f"{sql_run}-{s}.jsonl"), jl(ROOT / "runs" / f"{hosted_run}{hs}.jsonl")
         for qid, q in qs.items():
             if qid in g and qid in x and qid in h:
                 rows.append({"set": s, "qid": qid, "question": q["question"], "g": g[qid], "x": x[qid], "h": h[qid]})
+
+    held = []                       # the held-out set is its own pool; it is never merged into the 181
+    hs, hq = HELDOUT
+    gp, xp, hp = ROOT / "runs" / f"{gate_run}-heldout.jsonl", ROOT / "runs" / f"{sql_run}-heldout.jsonl", ROOT / "runs" / f"{hosted_run}{hs}.jsonl"
+    if gp.exists() and xp.exists() and hp.exists():
+        d = json.loads((ROOT / "data" / f"{hq}.json").read_text(encoding="utf-8"))
+        qs = {q["id"]: q for q in (d if isinstance(d, list) else d["questions"])}
+        g, x, h = jl(gp), jl(xp), jl(hp)
+        held = [{"set": "heldout", "qid": qid, "question": q["question"], "g": g[qid], "x": x[qid], "h": h[qid]} for qid, q in qs.items() if qid in g and qid in x and qid in h]
 
     def gated(r, escalate):
         gc = sec_cost(r["g"]["latency_s"])
@@ -79,6 +88,8 @@ def main() -> int:
     pools = {"core + stress, answerable (181 questions)": [r for r in rows if r["set"] != "decline" and r["x"]["kind"] is not None],
              "decline set (36 questions: 12 controls, 24 should decline)": [r for r in rows if r["set"] == "decline"]}
     pools["core + stress, answerable (181 questions)"] = [r for r in rows if r["set"] != "decline"]
+    if held:
+        pools.update(heldout_splits(held))
     out, L = {}, ["# Decline gate in front of a local SQL model", "",
                   f"Gate: `{gate_run}`. SQL model: `{sql_run}`. Hosted reference: `{hosted_run}`. Computed from saved single-run answers; a strategy only chooses which saved answer is used. "
                   "The core set includes 6 should-decline questions, so gate refusals there count as correct.", ""]
@@ -105,8 +116,9 @@ def main() -> int:
     ctl = [r for r in dec if r["x"]["kind"] == "sql" and r["g"]["kind"] != "sql" and r["x"]["passed"]]
     L += ["## What the gate costs", "", f"- Answerable core and stress questions the 7B got right but the gate refused: {len(fr)} ({', '.join(fr) or 'none'}).",
           f"- Decline-set controls the 7B got right but the gate refused: {len(ctl)}.", ""]
-    (ROOT / "docs" / "results" / "gate.md").write_text("\n".join(L) + "\n", encoding="utf-8")
-    (ROOT / "docs" / "results" / "gate.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    suffix = "" if gate_run == "tuned6r2" and sql_run == "xiyan7b-final" else "_" + gate_run + "_" + sql_run
+    (ROOT / "docs" / "results" / f"gate{suffix}.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    (ROOT / "docs" / "results" / f"gate{suffix}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print("\n".join(L))
     return 0
 

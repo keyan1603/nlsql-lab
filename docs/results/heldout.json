@@ -1,0 +1,815 @@
+{
+ "local_run": "tuned6gguf",
+ "n_heldout": 52,
+ "frozen_commit": "8aadc9ed2440fbaf66f64bfb35f539ad02b04bb0",
+ "strategies": {
+  "All hosted (gemini-3.5-flash-lite)": {
+   "heldout": {
+    "correct": 43,
+    "n": 52,
+    "sent_to_hosted": 52,
+    "usd_per_1000": 1.488
+   },
+   "original_published": {
+    "correct": 160,
+    "n": 181,
+    "sent_to_hosted": 181,
+    "usd_per_1000": 1.364
+   },
+   "original_recomputed": {
+    "correct": 160,
+    "n": 181,
+    "sent_to_hosted": 181,
+    "usd_per_1000": 1.364
+   },
+   "delta_points_vs_published": -5.7
+  },
+  "3B alone": {
+   "heldout": {
+    "correct": 32,
+    "n": 52,
+    "usd_per_1000": 0.017
+   },
+   "original_published": {
+    "correct": 104,
+    "n": 181,
+    "usd_per_1000": 0.062
+   },
+   "original_recomputed": {
+    "correct": 109,
+    "n": 181,
+    "usd_per_1000": 0.009
+   },
+   "delta_points_vs_published": 4.1
+  },
+  "7B alone": {
+   "heldout": {
+    "correct": 27,
+    "n": 52,
+    "usd_per_1000": 0.046
+   },
+   "original_published": {
+    "correct": 125,
+    "n": 181,
+    "usd_per_1000": 0.029
+   },
+   "original_recomputed": {
+    "correct": 125,
+    "n": 181,
+    "usd_per_1000": 0.029
+   },
+   "delta_points_vs_published": -17.1
+  },
+  "3B decline gate + 7B": {
+   "heldout": {
+    "correct": 38,
+    "n": 52,
+    "usd_per_1000": 0.051
+   },
+   "original_published": {
+    "correct": 127,
+    "n": 181,
+    "usd_per_1000": 0.089
+   },
+   "original_recomputed": {
+    "correct": 127,
+    "n": 181,
+    "usd_per_1000": 0.035
+   },
+   "delta_points_vs_published": 2.9
+  },
+  "3B decline gate + 7B, escalate on error, empty or invented value": {
+   "heldout": {
+    "correct": 42,
+    "n": 52,
+    "usd_per_1000": 0.201
+   },
+   "original_published": {
+    "correct": 138,
+    "n": 181,
+    "usd_per_1000": 0.238
+   },
+   "original_recomputed": {
+    "correct": 136,
+    "n": 181,
+    "usd_per_1000": 0.165
+   },
+   "delta_points_vs_published": 4.5
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "heldout": {
+    "correct": 42,
+    "n": 52,
+    "usd_per_1000": 0.229
+   },
+   "original_published": {
+    "correct": 148,
+    "n": 181,
+    "usd_per_1000": 0.643
+   },
+   "original_recomputed": {
+    "correct": 147,
+    "n": 181,
+    "usd_per_1000": 0.601
+   },
+   "delta_points_vs_published": -1.0
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "heldout": {
+    "correct": 42,
+    "n": 52,
+    "usd_per_1000": 0.229
+   },
+   "original_published": {
+    "correct": 147,
+    "n": 181,
+    "usd_per_1000": 0.654
+   },
+   "original_recomputed": {
+    "correct": 146,
+    "n": 181,
+    "usd_per_1000": 0.59
+   },
+   "delta_points_vs_published": -0.4
+  },
+  "3B-only router: rules 1+, escalate on error, empty, decline or invented value": {
+   "heldout": {
+    "correct": 38,
+    "n": 52,
+    "sent_to_hosted": 23,
+    "usd_per_1000": 0.654
+   },
+   "original_published": {
+    "correct": 151,
+    "n": 181,
+    "sent_to_hosted": 89,
+    "usd_per_1000": 0.756
+   },
+   "original_recomputed": {
+    "correct": 149,
+    "n": 181,
+    "sent_to_hosted": 87,
+    "usd_per_1000": 0.705
+   },
+   "delta_points_vs_published": -10.3
+  }
+ },
+ "splits": {
+  "All hosted (gemini-3.5-flash-lite)": {
+   "routine": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.39
+   },
+   "complex": {
+    "correct": 19,
+    "n": 24,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 1.617
+   },
+   "should decline": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.331
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 4,
+    "usd_per_1000": 1.483
+   }
+  },
+  "3B alone": {
+   "routine": {
+    "correct": 10,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "complex": {
+    "correct": 7,
+    "n": 24,
+    "usd_per_1000": 0.028
+   },
+   "should decline": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.011
+   }
+  },
+  "7B alone": {
+   "routine": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.022
+   },
+   "complex": {
+    "correct": 12,
+    "n": 24,
+    "usd_per_1000": 0.072
+   },
+   "should decline": {
+    "correct": 0,
+    "n": 12,
+    "usd_per_1000": 0.026
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.02
+   }
+  },
+  "3B decline gate + 7B": {
+   "routine": {
+    "correct": 11,
+    "n": 12,
+    "usd_per_1000": 0.027
+   },
+   "complex": {
+    "correct": 12,
+    "n": 24,
+    "usd_per_1000": 0.088
+   },
+   "should decline": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.031
+   }
+  },
+  "3B decline gate + 7B, escalate on error, empty or invented value": {
+   "routine": {
+    "correct": 11,
+    "n": 12,
+    "usd_per_1000": 0.027
+   },
+   "complex": {
+    "correct": 16,
+    "n": 24,
+    "usd_per_1000": 0.413
+   },
+   "should decline": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.031
+   }
+  },
+  "Rules 1+ first, then 3B gate, then 7B with escalation": {
+   "routine": {
+    "correct": 11,
+    "n": 12,
+    "usd_per_1000": 0.027
+   },
+   "complex": {
+    "correct": 16,
+    "n": 24,
+    "usd_per_1000": 0.474
+   },
+   "should decline": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.031
+   }
+  },
+  "3B gate first, then rules 1+, then 7B with escalation": {
+   "routine": {
+    "correct": 11,
+    "n": 12,
+    "usd_per_1000": 0.027
+   },
+   "complex": {
+    "correct": 16,
+    "n": 24,
+    "usd_per_1000": 0.475
+   },
+   "should decline": {
+    "correct": 12,
+    "n": 12,
+    "usd_per_1000": 0.006
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "usd_per_1000": 0.031
+   }
+  },
+  "3B-only router: rules 1+, escalate on error, empty, decline or invented value": {
+   "routine": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   },
+   "complex": {
+    "correct": 14,
+    "n": 24,
+    "sent_to_hosted": 10,
+    "usd_per_1000": 0.685
+   },
+   "should decline": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   },
+   "answerable controls": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   }
+  }
+ },
+ "rules": {
+  "original 181 (tuned6r2) / 1+": {
+   "n": 181,
+   "routed": 57,
+   "local_wrong": 77,
+   "local_wrong_routed": 35,
+   "local_wrong_routed_hosted_right": 29,
+   "local_wrong_hosted_right": 66,
+   "recall": 0.45454545454545453,
+   "precision": 0.6140350877192983,
+   "missed_ids": [
+    "J04",
+    "J05",
+    "J06",
+    "G04",
+    "D03",
+    "D04",
+    "D06",
+    "N01",
+    "H01",
+    "H03",
+    "P01",
+    "HJ02",
+    "HJ04",
+    "HJ05",
+    "HW01",
+    "HW05",
+    "HW06",
+    "HC02",
+    "HE02",
+    "HE03",
+    "HE05",
+    "HS03",
+    "HS04",
+    "HS05",
+    "HS07",
+    "HS08",
+    "HT05",
+    "HT06",
+    "HD03",
+    "HD04",
+    "HD05",
+    "HD08",
+    "HW13",
+    "HC14",
+    "HE09",
+    "HE13",
+    "HS10",
+    "HP10",
+    "HT10",
+    "HT13",
+    "HD14",
+    "HX10"
+   ],
+   "false_alarm_ids": [
+    "J01",
+    "G08",
+    "D05",
+    "N02",
+    "N03",
+    "N04",
+    "H02",
+    "U02",
+    "HE01",
+    "HE04",
+    "HP03",
+    "HP04",
+    "HP07",
+    "HT03",
+    "HW11",
+    "HW12",
+    "HW14",
+    "HE10",
+    "HS09",
+    "HP11",
+    "HT12",
+    "HD11"
+   ]
+  },
+  "original 181 (tuned6r2) / 2+": {
+   "n": 181,
+   "routed": 5,
+   "local_wrong": 77,
+   "local_wrong_routed": 3,
+   "local_wrong_routed_hosted_right": 2,
+   "local_wrong_hosted_right": 66,
+   "recall": 0.03896103896103896,
+   "precision": 0.6,
+   "missed_ids": [
+    "J04",
+    "J05",
+    "J06",
+    "G04",
+    "D03",
+    "D04",
+    "D06",
+    "N01",
+    "H01",
+    "H03",
+    "P01",
+    "HJ02",
+    "HJ04",
+    "HJ05",
+    "HJ06",
+    "HW01",
+    "HW02",
+    "HW03",
+    "HW05",
+    "HW06",
+    "HW07",
+    "HW08",
+    "HC01",
+    "HC02",
+    "HC03",
+    "HC04",
+    "HC05",
+    "HC06",
+    "HC07",
+    "HE02",
+    "HE03",
+    "HE05",
+    "HE07",
+    "HS01",
+    "HS02",
+    "HS03",
+    "HS04",
+    "HS05",
+    "HS07",
+    "HS08",
+    "HP06",
+    "HT01",
+    "HT05",
+    "HT06",
+    "HT08",
+    "HD03",
+    "HD04",
+    "HD05",
+    "HD06",
+    "HD07",
+    "HD08",
+    "HW09",
+    "HW13",
+    "HC09",
+    "HC11",
+    "HC13",
+    "HC14",
+    "HE09",
+    "HE12",
+    "HE13",
+    "HS10",
+    "HS13",
+    "HP10",
+    "HP13",
+    "HP14",
+    "HT09",
+    "HT10",
+    "HT13",
+    "HD09",
+    "HD10",
+    "HD12",
+    "HD13",
+    "HD14",
+    "HX10"
+   ],
+   "false_alarm_ids": [
+    "HT03",
+    "HW11"
+   ]
+  },
+  "original 181 (tuned6gguf) / 1+": {
+   "n": 181,
+   "routed": 57,
+   "local_wrong": 72,
+   "local_wrong_routed": 30,
+   "local_wrong_routed_hosted_right": 25,
+   "local_wrong_hosted_right": 62,
+   "recall": 0.4166666666666667,
+   "precision": 0.5263157894736842,
+   "missed_ids": [
+    "L02",
+    "L03",
+    "J05",
+    "G04",
+    "D03",
+    "D04",
+    "D06",
+    "N01",
+    "H01",
+    "H03",
+    "P03",
+    "HJ02",
+    "HJ04",
+    "HJ05",
+    "HW01",
+    "HW05",
+    "HW06",
+    "HC02",
+    "HE02",
+    "HE03",
+    "HE05",
+    "HS03",
+    "HS04",
+    "HS05",
+    "HS07",
+    "HS08",
+    "HP02",
+    "HT05",
+    "HD03",
+    "HD04",
+    "HD05",
+    "HD08",
+    "HW13",
+    "HC12",
+    "HC14",
+    "HE09",
+    "HE11",
+    "HS10",
+    "HP10",
+    "HT10",
+    "HT13",
+    "HX10"
+   ],
+   "false_alarm_ids": [
+    "J01",
+    "G08",
+    "D05",
+    "N02",
+    "N03",
+    "N04",
+    "H02",
+    "U02",
+    "HJ06",
+    "HW02",
+    "HW08",
+    "HC06",
+    "HE01",
+    "HE07",
+    "HP03",
+    "HP04",
+    "HP06",
+    "HP07",
+    "HT01",
+    "HT08",
+    "HW11",
+    "HE10",
+    "HS09",
+    "HP11",
+    "HT12",
+    "HD10",
+    "HD11"
+   ]
+  },
+  "original 181 (tuned6gguf) / 2+": {
+   "n": 181,
+   "routed": 5,
+   "local_wrong": 72,
+   "local_wrong_routed": 4,
+   "local_wrong_routed_hosted_right": 3,
+   "local_wrong_hosted_right": 62,
+   "recall": 0.05555555555555555,
+   "precision": 0.8,
+   "missed_ids": [
+    "L02",
+    "L03",
+    "J05",
+    "G04",
+    "D03",
+    "D04",
+    "D06",
+    "N01",
+    "H01",
+    "H03",
+    "P03",
+    "HJ02",
+    "HJ04",
+    "HJ05",
+    "HW01",
+    "HW03",
+    "HW05",
+    "HW06",
+    "HW07",
+    "HC01",
+    "HC02",
+    "HC03",
+    "HC04",
+    "HC05",
+    "HC07",
+    "HE02",
+    "HE03",
+    "HE04",
+    "HE05",
+    "HS01",
+    "HS02",
+    "HS03",
+    "HS04",
+    "HS05",
+    "HS07",
+    "HS08",
+    "HP02",
+    "HT05",
+    "HD03",
+    "HD04",
+    "HD05",
+    "HD06",
+    "HD07",
+    "HD08",
+    "HW09",
+    "HW12",
+    "HW13",
+    "HW14",
+    "HC09",
+    "HC11",
+    "HC12",
+    "HC13",
+    "HC14",
+    "HE09",
+    "HE11",
+    "HE12",
+    "HS10",
+    "HS13",
+    "HP10",
+    "HP13",
+    "HP14",
+    "HT09",
+    "HT10",
+    "HT13",
+    "HD09",
+    "HD12",
+    "HD13",
+    "HX10"
+   ],
+   "false_alarm_ids": [
+    "HW11"
+   ]
+  },
+  "held-out, all 52 (tuned6gguf) / 1+": {
+   "n": 52,
+   "routed": 1,
+   "local_wrong": 20,
+   "local_wrong_routed": 0,
+   "local_wrong_routed_hosted_right": 0,
+   "local_wrong_hosted_right": 13,
+   "recall": 0.0,
+   "precision": 0.0,
+   "missed_ids": [
+    "RT06",
+    "RT08",
+    "HO01",
+    "HO02",
+    "HO03",
+    "HO05",
+    "HO08",
+    "HO09",
+    "HO11",
+    "HO12",
+    "HO13",
+    "HO14",
+    "HO15",
+    "HO16",
+    "HO17",
+    "HO19",
+    "HO21",
+    "HO22",
+    "HO24",
+    "HK02"
+   ],
+   "false_alarm_ids": [
+    "HO20"
+   ]
+  },
+  "held-out, all 52 (tuned6gguf) / 2+": {
+   "n": 52,
+   "routed": 0,
+   "local_wrong": 20,
+   "local_wrong_routed": 0,
+   "local_wrong_routed_hosted_right": 0,
+   "local_wrong_hosted_right": 13,
+   "recall": 0.0,
+   "precision": null,
+   "missed_ids": [
+    "RT06",
+    "RT08",
+    "HO01",
+    "HO02",
+    "HO03",
+    "HO05",
+    "HO08",
+    "HO09",
+    "HO11",
+    "HO12",
+    "HO13",
+    "HO14",
+    "HO15",
+    "HO16",
+    "HO17",
+    "HO19",
+    "HO21",
+    "HO22",
+    "HO24",
+    "HK02"
+   ],
+   "false_alarm_ids": []
+  },
+  "held-out, answerable only (tuned6gguf) / 1+": {
+   "n": 40,
+   "routed": 1,
+   "local_wrong": 20,
+   "local_wrong_routed": 0,
+   "local_wrong_routed_hosted_right": 0,
+   "local_wrong_hosted_right": 13,
+   "recall": 0.0,
+   "precision": 0.0,
+   "missed_ids": [
+    "RT06",
+    "RT08",
+    "HO01",
+    "HO02",
+    "HO03",
+    "HO05",
+    "HO08",
+    "HO09",
+    "HO11",
+    "HO12",
+    "HO13",
+    "HO14",
+    "HO15",
+    "HO16",
+    "HO17",
+    "HO19",
+    "HO21",
+    "HO22",
+    "HO24",
+    "HK02"
+   ],
+   "false_alarm_ids": [
+    "HO20"
+   ]
+  },
+  "held-out, answerable only (tuned6gguf) / 2+": {
+   "n": 40,
+   "routed": 0,
+   "local_wrong": 20,
+   "local_wrong_routed": 0,
+   "local_wrong_routed_hosted_right": 0,
+   "local_wrong_hosted_right": 13,
+   "recall": 0.0,
+   "precision": null,
+   "missed_ids": [
+    "RT06",
+    "RT08",
+    "HO01",
+    "HO02",
+    "HO03",
+    "HO05",
+    "HO08",
+    "HO09",
+    "HO11",
+    "HO12",
+    "HO13",
+    "HO14",
+    "HO15",
+    "HO16",
+    "HO17",
+    "HO19",
+    "HO21",
+    "HO22",
+    "HO24",
+    "HK02"
+   ],
+   "false_alarm_ids": []
+  }
+ }
+}

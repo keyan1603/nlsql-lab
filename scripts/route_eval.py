@@ -25,7 +25,7 @@ from nlsql.invented import invented_values                   # noqa: E402
 from nlsql.router import FRONTIER, LOCAL, escalate, families_of, route   # noqa: E402
 
 LOCAL_RUN, HOSTED_RUN = "tuned6r2", "gemini-flashlite"   # LOCAL_RUN is overridden by --local-run
-SETS = {"core": ("", "questions"), "hard": ("-hard", "questions_hard"), "hard2": ("-hard2", "questions_hard2"), "decline": ("-decline", "questions_decline")}
+SETS = {"core": ("", "questions"), "hard": ("-hard", "questions_hard"), "hard2": ("-hard2", "questions_hard2"), "decline": ("-decline", "questions_decline"), "heldout": ("-heldout", "questions_heldout")}
 
 
 def jl(path: Path) -> dict:
@@ -53,7 +53,7 @@ def status_of(r: dict) -> str:
 
 def load_all() -> list[dict]:
     rows = []
-    for s, (hs, qf) in SETS.items():
+    for s, (hs, qf) in ((k, v) for k, v in SETS.items() if k != "heldout"):     # heldout is a separate pool, never part of the 181
         d = json.loads((ROOT / "data" / f"{qf}.json").read_text(encoding="utf-8"))
         qs = {q["id"]: q for q in (d if isinstance(d, list) else d["questions"])}
         loc, hos = jl(ROOT / "runs" / f"{LOCAL_RUN}-{s}.jsonl"), jl(ROOT / "runs" / f"{HOSTED_RUN}{hs}.jsonl")
@@ -61,6 +61,30 @@ def load_all() -> list[dict]:
             if qid in loc and qid in hos:
                 rows.append({"set": s, "qid": qid, "question": q["question"], "category": q.get("category", ""), "local": loc[qid], "hosted": hos[qid]})
     return rows
+
+
+HELDOUT = SETS["heldout"]     # a separate pool: written after the rules were frozen, never merged into the 181
+
+
+def heldout_splits(rows: list[dict]) -> dict:
+    """The held-out pool and its parts by question id prefix: routine (RT), complex (HO), should-decline (HU unanswerable, HM ambiguous), answerable controls (HK)."""
+    part = lambda *pre: [r for r in rows if r["qid"].startswith(pre)]
+    return {f"held-out set ({len(rows)} questions)": rows,
+            f"held-out, routine ({len(part('RT'))})": part("RT"), f"held-out, complex ({len(part('HO'))})": part("HO"),
+            f"held-out, should decline ({len(part('HU', 'HM'))})": part("HU", "HM"), f"held-out, answerable controls ({len(part('HK'))})": part("HK")}
+
+
+def load_heldout(local_run: str, hosted_run: str = HOSTED_RUN) -> list[dict]:
+    """Rows for the held-out set, or [] when the local or hosted run for it does not exist yet."""
+    hs, qf = HELDOUT
+    lp, hp = ROOT / "runs" / f"{local_run}-heldout.jsonl", ROOT / "runs" / f"{hosted_run}{hs}.jsonl"
+    if not (lp.exists() and hp.exists()):
+        return []
+    d = json.loads((ROOT / "data" / f"{qf}.json").read_text(encoding="utf-8"))
+    qs = {q["id"]: q for q in (d if isinstance(d, list) else d["questions"])}
+    loc, hos = jl(lp), jl(hp)
+    return [{"set": "heldout", "qid": qid, "question": q["question"], "category": q.get("category", ""), "local": loc[qid], "hosted": hos[qid]}
+            for qid, q in qs.items() if qid in loc and qid in hos]
 
 
 def main() -> int:
@@ -73,7 +97,8 @@ def main() -> int:
     kwh = ASSUMPTIONS["usd_per_kwh"][0]
     watts = power["load_w_mean"] + ASSUMPTIONS["cpu_and_system_w"][0]
     rows = load_all()
-    for r in rows:
+    held = load_heldout(LOCAL_RUN)
+    for r in rows + held:
         r["f_cost"] = usd(r["hosted"]["tokens_in"], r["hosted"]["tokens_out"], "Standard")
         r["l_cost"] = watts * r["local"]["latency_s"] / 3600 / 1000 * kwh
         r["why"] = escalate(r["local"]["kind"], status_of(r["local"]))
@@ -107,6 +132,8 @@ def main() -> int:
         "Rules 1+, plus escalate on error, empty, decline or invented value": strategy(rule(1), errs_inv),
     }
     pools = {"core + stress (181 questions)": [r for r in rows if r["set"] != "decline"], "decline set (36 questions)": [r for r in rows if r["set"] == "decline"]}
+    if held:
+        pools.update(heldout_splits(held))
     out = {"strategies": {}, "note": "accuracy = share of questions whose used answer passed the grader; cost per 1,000 questions at hosted Standard prices"}
     L = ["# Routing: which model answers", "",
          f"Measured on the saved answers of the local model run `{LOCAL_RUN}` and the hosted gemini-3.5-flash-lite (`{HOSTED_RUN}`), "
@@ -157,6 +184,17 @@ def main() -> int:
     miss = [r for r in ans if not r["local"]["passed"] and r["hosted"]["passed"] and route(r["question"], 1).target == LOCAL]
     L += [f"Hosted right, local wrong, and the rules kept it local ({len(miss)}):", ""] + [f"- {r['qid']} ({r['category']}): {r['question']}" for r in miss[:12]]
     out["missed_ids"] = [r["qid"] for r in miss]
+    if held:
+        wh = [r for r in held if r["local"]["kind"] == "sql" or r["local"]["passed"] is not None]
+        L += ["", "## Held-out set: how well the rules find the local failures", "",
+              "| Threshold | Routed to hosted | Local wrong among them (precision) | Local-wrong questions caught (recall) |", "|---|---|---|---|"]
+        out["heldout_rules"] = {}
+        wrong_h = [r for r in wh if not r["local"]["passed"]]
+        for t in (1, 2):
+            routed = [r for r in wh if route(r["question"], t).target == FRONTIER]
+            hit = [r for r in routed if not r["local"]["passed"]]
+            L.append(f"| {t}+ families | {len(routed)} of {len(wh)} | {len(hit)} of {len(routed)} | {len(hit)} of {len(wrong_h)} |")
+            out["heldout_rules"][f"{t}+"] = {"routed": len(routed), "local_wrong_in_routed": len(hit), "local_wrong_total": len(wrong_h), "n": len(wh)}
     (ROOT / "docs" / "results" / f"routing{suffix}.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     (ROOT / "docs" / "results" / f"routing{suffix}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print("\n".join(L))

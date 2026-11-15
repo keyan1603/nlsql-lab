@@ -21,7 +21,7 @@ from nlsql.safety import check_select                        # noqa: E402
 def main() -> int:
     show = "--show" in sys.argv
     which = sys.argv[sys.argv.index("--set") + 1] if "--set" in sys.argv else "core"
-    questions = load_questions(ROOT / "data" / {"core": "questions.json", "hard": "questions_hard.json", "hard2": "questions_hard2.json", "decline": "questions_decline.json"}[which])
+    questions = load_questions(ROOT / "data" / {"core": "questions.json", "hard": "questions_hard.json", "hard2": "questions_hard2.json", "decline": "questions_decline.json", "heldout": "questions_heldout.json"}[which])
     bad = problems(questions)
     for p in bad:
         print("PROBLEM:", p)

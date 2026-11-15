@@ -1,0 +1,510 @@
+{
+ "strategies": {
+  "core + stress (181 questions)": {
+   "All local (tuned6gguf)": {
+    "correct": 109,
+    "n": 181,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.009
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 160,
+    "n": 181,
+    "sent_to_hosted": 181,
+    "usd_per_1000": 1.364
+   },
+   "Rules, 1+ family": {
+    "correct": 129,
+    "n": 181,
+    "sent_to_hosted": 57,
+    "usd_per_1000": 0.489
+   },
+   "Rules, 2+ families": {
+    "correct": 112,
+    "n": 181,
+    "sent_to_hosted": 5,
+    "usd_per_1000": 0.054
+   },
+   "Local, escalate on error or empty": {
+    "correct": 125,
+    "n": 181,
+    "sent_to_hosted": 19,
+    "usd_per_1000": 0.179
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 132,
+    "n": 181,
+    "sent_to_hosted": 33,
+    "usd_per_1000": 0.272
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 142,
+    "n": 181,
+    "sent_to_hosted": 77,
+    "usd_per_1000": 0.637
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 133,
+    "n": 181,
+    "sent_to_hosted": 36,
+    "usd_per_1000": 0.299
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 137,
+    "n": 181,
+    "sent_to_hosted": 46,
+    "usd_per_1000": 0.369
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 149,
+    "n": 181,
+    "sent_to_hosted": 87,
+    "usd_per_1000": 0.705
+   }
+  },
+  "decline set (36 questions)": {
+   "All local (tuned6gguf)": {
+    "correct": 36,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.003
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 36,
+    "usd_per_1000": 1.343
+   },
+   "Rules, 1+ family": {
+    "correct": 36,
+    "n": 36,
+    "sent_to_hosted": 2,
+    "usd_per_1000": 0.077
+   },
+   "Rules, 2+ families": {
+    "correct": 36,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.003
+   },
+   "Local, escalate on error or empty": {
+    "correct": 36,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.003
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.883
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 25,
+    "usd_per_1000": 0.92
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.883
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.883
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 35,
+    "n": 36,
+    "sent_to_hosted": 25,
+    "usd_per_1000": 0.92
+   }
+  },
+  "held-out set (52 questions)": {
+   "All local (tuned6gguf)": {
+    "correct": 32,
+    "n": 52,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.017
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 43,
+    "n": 52,
+    "sent_to_hosted": 52,
+    "usd_per_1000": 1.488
+   },
+   "Rules, 1+ family": {
+    "correct": 32,
+    "n": 52,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.045
+   },
+   "Rules, 2+ families": {
+    "correct": 32,
+    "n": 52,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.017
+   },
+   "Local, escalate on error or empty": {
+    "correct": 35,
+    "n": 52,
+    "sent_to_hosted": 3,
+    "usd_per_1000": 0.109
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 52,
+    "sent_to_hosted": 18,
+    "usd_per_1000": 0.507
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 52,
+    "sent_to_hosted": 19,
+    "usd_per_1000": 0.536
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 35,
+    "n": 52,
+    "sent_to_hosted": 18,
+    "usd_per_1000": 0.507
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 38,
+    "n": 52,
+    "sent_to_hosted": 22,
+    "usd_per_1000": 0.626
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 38,
+    "n": 52,
+    "sent_to_hosted": 23,
+    "usd_per_1000": 0.654
+   }
+  },
+  "held-out, routine (12)": {
+   "All local (tuned6gguf)": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.39
+   },
+   "Rules, 1+ family": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Rules, 2+ families": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Local, escalate on error or empty": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 10,
+    "n": 12,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.125
+   }
+  },
+  "held-out, complex (24)": {
+   "All local (tuned6gguf)": {
+    "correct": 7,
+    "n": 24,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.028
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 19,
+    "n": 24,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 1.617
+   },
+   "Rules, 1+ family": {
+    "correct": 7,
+    "n": 24,
+    "sent_to_hosted": 1,
+    "usd_per_1000": 0.09
+   },
+   "Rules, 2+ families": {
+    "correct": 7,
+    "n": 24,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.028
+   },
+   "Local, escalate on error or empty": {
+    "correct": 10,
+    "n": 24,
+    "sent_to_hosted": 3,
+    "usd_per_1000": 0.228
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 24,
+    "sent_to_hosted": 5,
+    "usd_per_1000": 0.365
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 24,
+    "sent_to_hosted": 6,
+    "usd_per_1000": 0.427
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 24,
+    "sent_to_hosted": 5,
+    "usd_per_1000": 0.365
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 14,
+    "n": 24,
+    "sent_to_hosted": 9,
+    "usd_per_1000": 0.623
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 14,
+    "n": 24,
+    "sent_to_hosted": 10,
+    "usd_per_1000": 0.685
+   }
+  },
+  "held-out, should decline (12)": {
+   "All local (tuned6gguf)": {
+    "correct": 12,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.331
+   },
+   "Rules, 1+ family": {
+    "correct": 12,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Rules, 2+ families": {
+    "correct": 12,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Local, escalate on error or empty": {
+    "correct": 12,
+    "n": 12,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.006
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 11,
+    "n": 12,
+    "sent_to_hosted": 12,
+    "usd_per_1000": 1.338
+   }
+  },
+  "held-out, answerable controls (4)": {
+   "All local (tuned6gguf)": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 4,
+    "usd_per_1000": 1.483
+   },
+   "Rules, 1+ family": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Rules, 2+ families": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Local, escalate on error or empty": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 3,
+    "n": 4,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.011
+   }
+  }
+ },
+ "note": "accuracy = share of questions whose used answer passed the grader; cost per 1,000 questions at hosted Standard prices",
+ "training_share_routed": {
+  "decline_unanswerable": 0.065,
+  "fanout": 0.018,
+  "evidence": 0.579,
+  "aggregate": 0.017,
+  "set_ops": 0.182,
+  "decline_ambiguous": 0.054,
+  "window": 0.524,
+  "hierarchy": 0.099,
+  "state_codes": 0.014,
+  "pivot": 0.178,
+  "multi_join": 0.006,
+  "correlated": 0.236,
+  "date_time": 0.04,
+  "lookup_filter": 0.033,
+  "time_bucket": 0.907,
+  "cte_multistep": 0.132
+ },
+ "missed_ids": [
+  "L02",
+  "L03",
+  "J05",
+  "G04",
+  "D03",
+  "D04",
+  "D06",
+  "N01",
+  "H01",
+  "H03",
+  "P03",
+  "HJ02",
+  "HJ04",
+  "HJ05",
+  "HW05",
+  "HC02",
+  "HE02",
+  "HE03",
+  "HE05",
+  "HS03",
+  "HS04",
+  "HS05",
+  "HS07",
+  "HS08",
+  "HP02",
+  "HT05",
+  "HD03",
+  "HD05",
+  "HD08",
+  "HW13",
+  "HC12",
+  "HE09",
+  "HE11",
+  "HS10",
+  "HP10",
+  "HT10",
+  "HX10"
+ ],
+ "heldout_rules": {
+  "1+": {
+   "routed": 1,
+   "local_wrong_in_routed": 0,
+   "local_wrong_total": 20,
+   "n": 52
+  },
+  "2+": {
+   "routed": 0,
+   "local_wrong_in_routed": 0,
+   "local_wrong_total": 20,
+   "n": 52
+  }
+ }
+}

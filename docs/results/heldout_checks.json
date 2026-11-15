@@ -1,0 +1,325 @@
+{
+ "questions": 52,
+ "vs_eval_sets": [],
+ "training_pairs": 8373,
+ "vs_training": [],
+ "gold_queries": 40,
+ "gold_with_filter_cells": 37,
+ "gold_sharing_a_training_cell": 32,
+ "shared_cells": {
+  "RT01": [
+   [
+    "cust_master",
+    "is_actv",
+    "1"
+   ],
+   [
+    "cust_master",
+    "region_cd",
+    "EU"
+   ]
+  ],
+  "RT02": [
+   [
+    "prod_catalog",
+    "disc_flag",
+    "0"
+   ]
+  ],
+  "RT03": [
+   [
+    "ord_hdr",
+    "ord_status",
+    "C"
+   ]
+  ],
+  "RT04": [
+   [
+    "cust_master",
+    "is_actv",
+    "1"
+   ],
+   [
+    "cust_master",
+    "region_cd",
+    "NA"
+   ],
+   [
+    "cust_master",
+    "tier_cd",
+    "G"
+   ]
+  ],
+  "RT06": [
+   [
+    "ord_hdr",
+    "ord_id",
+    "O-5002"
+   ]
+  ],
+  "RT07": [
+   [
+    "support_tkt",
+    "channel_cd",
+    "PHN"
+   ]
+  ],
+  "RT08": [
+   [
+    "prod_catalog",
+    "categ_cd",
+    "KIT"
+   ]
+  ],
+  "RT09": [
+   [
+    "refund_req",
+    "status_cd",
+    "P"
+   ]
+  ],
+  "RT10": [
+   [
+    "warehouse",
+    "region_cd",
+    "LA"
+   ]
+  ],
+  "HO02": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ],
+   [
+    "ord_hdr",
+    "ord_status",
+    "D"
+   ]
+  ],
+  "HO03": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ]
+  ],
+  "HO04": [
+   [
+    "refund_req",
+    "status_cd",
+    "A"
+   ]
+  ],
+  "HO06": [
+   [
+    "support_tkt",
+    "channel_cd",
+    "PHN"
+   ]
+  ],
+  "HO07": [
+   [
+    "web_event",
+    "evt_type",
+    "PURCHASE"
+   ]
+  ],
+  "HO08": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ],
+   [
+    "ord_hdr",
+    "ord_status",
+    "D"
+   ]
+  ],
+  "HO09": [
+   [
+    "cust_master",
+    "is_actv",
+    "1"
+   ]
+  ],
+  "HO10": [
+   [
+    "cust_master",
+    "tier_cd",
+    "P"
+   ]
+  ],
+  "HO11": [
+   [
+    "policy_rule",
+    "eff_to",
+    "NULL"
+   ],
+   [
+    "policy_rule",
+    "rule_key",
+    "sla_hours_sev1"
+   ],
+   [
+    "support_tkt",
+    "closed_ts",
+    "NOTNULL"
+   ],
+   [
+    "support_tkt",
+    "sev_lvl",
+    "1"
+   ]
+  ],
+  "HO12": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ],
+   [
+    "refund_req",
+    "status_cd",
+    "A"
+   ]
+  ],
+  "HO13": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ],
+   [
+    "ord_hdr",
+    "ord_status",
+    "D"
+   ]
+  ],
+  "HO15": [
+   [
+    "support_tkt",
+    "closed_ts",
+    "NOTNULL"
+   ]
+  ],
+  "HO16": [
+   [
+    "prod_catalog",
+    "categ_cd",
+    "KIT"
+   ],
+   [
+    "prod_catalog",
+    "categ_cd",
+    "OFC"
+   ]
+  ],
+  "HO18": [
+   [
+    "web_event",
+    "evt_type",
+    "CART"
+   ],
+   [
+    "web_event",
+    "sku",
+    "NOTNULL"
+   ]
+  ],
+  "HO19": [
+   [
+    "ord_hdr",
+    "currency_cd",
+    "USD"
+   ]
+  ],
+  "HO21": [
+   [
+    "support_tkt",
+    "closed_ts",
+    "NOTNULL"
+   ]
+  ],
+  "HO22": [
+   [
+    "cust_master",
+    "region_cd",
+    "AP"
+   ],
+   [
+    "prod_supplier",
+    "is_primary",
+    "1"
+   ]
+  ],
+  "HO23": [
+   [
+    "prod_catalog",
+    "disc_flag",
+    "1"
+   ],
+   [
+    "warehouse",
+    "region_cd",
+    "EU"
+   ]
+  ],
+  "HO24": [
+   [
+    "payment",
+    "pay_status",
+    "F"
+   ],
+   [
+    "shipment",
+    "carrier_cd",
+    "DHL"
+   ],
+   [
+    "shipment",
+    "ship_status",
+    "D"
+   ]
+  ],
+  "HK01": [
+   [
+    "warehouse",
+    "wh_nm",
+    "Newark Hub"
+   ]
+  ],
+  "HK02": [
+   [
+    "support_tkt",
+    "categ_cd",
+    "BILL"
+   ],
+   [
+    "support_tkt",
+    "closed_ts",
+    "NOTNULL"
+   ]
+  ],
+  "HK03": [
+   [
+    "ord_hdr",
+    "ord_status",
+    "D"
+   ]
+  ],
+  "HK04": [
+   [
+    "tkt_event",
+    "actor_emp_id",
+    "NOTNULL"
+   ],
+   [
+    "tkt_event",
+    "evt_type",
+    "ESCAL"
+   ]
+  ]
+ }
+}
