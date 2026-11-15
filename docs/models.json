@@ -80,6 +80,15 @@
     "repo_revision": "b374b9c2b665709d2ef157c4f9e432e8ed9c9745",
     "sha256": "97f0cf05a278d9cd51dc73f8b8ced60f7e332cb8fcc2e46116a6654db3ec1bc2"
   },
+  "mradermacher/XiYanSQL-QwenCoder-14B-2504-GGUF/XiYanSQL-QwenCoder-14B-2504.Q4_K_M.gguf": {
+    "bytes": 8988111168,
+    "file": "XiYanSQL-QwenCoder-14B-2504.Q4_K_M.gguf",
+    "licence": "apache-2.0",
+    "path_hint": "mradermacher\\XiYanSQL-QwenCoder-14B-2504-GGUF\\XiYanSQL-QwenCoder-14B-2504.Q4_K_M.gguf",
+    "repo": "mradermacher/XiYanSQL-QwenCoder-14B-2504-GGUF",
+    "repo_revision": "ac68307205145e5fa9e0e0720b8c2cc8c2d573ce",
+    "sha256": "66d323a706751ec29e471bb79385a3e095aa9c66bf4f68a54f12a0637360ef0d"
+  },
   "mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF/XiYanSQL-QwenCoder-7B-2504.IQ4_XS.gguf": {
     "bytes": 4250299200,
     "file": "XiYanSQL-QwenCoder-7B-2504.IQ4_XS.gguf",

@@ -14,3 +14,4 @@ train/base3b/
 train/*.out
 train/*.done
 train/specialists/
+train/base_xiyan3b/
