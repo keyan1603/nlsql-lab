@@ -1,0 +1,84 @@
+{
+ "cv": {
+  "precision": 0.6955326460481099,
+  "recall": 0.7719298245614035,
+  "f1": 0.7317425885755604
+ },
+ "rows": {
+  "No router (gate and 7B only)": {
+   "sent": 0,
+   "recall_hits": 0,
+   "correct": 138,
+   "n": 181,
+   "usd_per_1000": 0.238
+  },
+  "Deterministic rules, 1+ families": {
+   "sent": 57,
+   "recall_hits": 23,
+   "correct": 148,
+   "n": 181,
+   "usd_per_1000": 0.643
+  },
+  "Learned classifier, p >= 0.3": {
+   "sent": 95,
+   "recall_hits": 37,
+   "correct": 153,
+   "n": 181,
+   "usd_per_1000": 0.874
+  },
+  "Learned classifier, p >= 0.4": {
+   "sent": 83,
+   "recall_hits": 32,
+   "correct": 151,
+   "n": 181,
+   "usd_per_1000": 0.807
+  },
+  "Learned classifier, p >= 0.5": {
+   "sent": 67,
+   "recall_hits": 26,
+   "correct": 148,
+   "n": 181,
+   "usd_per_1000": 0.683
+  },
+  "Learned classifier, p >= 0.6": {
+   "sent": 56,
+   "recall_hits": 21,
+   "correct": 146,
+   "n": 181,
+   "usd_per_1000": 0.633
+  },
+  "Learned classifier, p >= 0.7": {
+   "sent": 40,
+   "recall_hits": 15,
+   "correct": 141,
+   "n": 181,
+   "usd_per_1000": 0.513
+  },
+  "Rules OR classifier p >= 0.5": {
+   "sent": 85,
+   "recall_hits": 34,
+   "correct": 150,
+   "n": 181,
+   "usd_per_1000": 0.794
+  },
+  "Rules AND classifier p >= 0.5": {
+   "sent": 39,
+   "recall_hits": 15,
+   "correct": 146,
+   "n": 181,
+   "usd_per_1000": 0.533
+  },
+  "All hosted": {
+   "sent": 181,
+   "recall_hits": 56,
+   "correct": 160,
+   "n": 181,
+   "usd_per_1000": 1.364
+  },
+  "random router, same share as rules (expected)": {
+   "correct": 144.93,
+   "n": 181,
+   "usd_per_1000": 0.592
+  }
+ }
+}

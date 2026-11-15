@@ -1,0 +1,26 @@
+{
+ "7B with error, empty and invented-value escalation": {
+  "sent": 17,
+  "correct": 138,
+  "n": 181,
+  "usd_per_1000": 0.238
+ },
+ "... plus escalate when the 3B and 7B disagree": {
+  "sent": 70,
+  "correct": 154,
+  "n": 181,
+  "usd_per_1000": 0.67
+ },
+ "... plus rules 1+ (router first)": {
+  "sent": 67,
+  "correct": 147,
+  "n": 181,
+  "usd_per_1000": 0.654
+ },
+ "... plus rules 1+ and disagreement": {
+  "sent": 93,
+  "correct": 155,
+  "n": 181,
+  "usd_per_1000": 0.837
+ }
+}
