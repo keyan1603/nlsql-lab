@@ -290,3 +290,23 @@ venv/Scripts/python scripts/run_hybrid.py --label open-all --policy open --sets 
 ```
 
 Output goes to `runs/hybrid-<label>.*` and `docs/results/hybrid.md` (regenerated from the saved runs by `scripts/hybrid_report.py`). The open policy respects `GEMINI_DAILY_CAP`; a capped run stops cleanly and resumes when the command is repeated.
+
+## A fresh test: what held up and what did not
+
+The routing rules and the invented-value check were written after the test categories were known, so they were frozen (git tag `router-frozen`) and scored on 52 new questions written afterwards with varied phrasing (`data/questions_heldout.json`; method, leak checks and caveats in `docs/results/heldout.md`). 12 are routine, 24 complex, 12 should be declined and 4 are answerable controls. Single runs; the 95% intervals are 17 to 25 points wide, so most differences below are not significant.
+
+| Strategy | Held-out (52) | Original pool (181) |
+|---|---|---|
+| All hosted | 82.7% | 88.4% |
+| Tuned 3B alone | 61.5% | 57.5% |
+| XiYan 7B alone | 51.9% | 69.1% |
+| 3B decline gate + 7B | 73.1% | 70.2% |
+| Gate + 7B, escalate on error, empty or invented value | **80.8%** | 76.2% |
+| Rules first, then gate, then 7B with escalation | 80.8% | 81.8% |
+| Rules, 3B-only router | 73.1% | 83.4% |
+| Escalate when the 3B and 7B disagree | 84.6% | 85.1% |
+
+- **The wording rules did not transfer.** On the new questions they sent 1 of 52 to the hosted model and caught none of the 20 wrong 3B answers. On the original pool a random router sending the same 31% scored about as well (80.1% against 81.8%), so most of that router's gain came from how many questions were escalated, not from which. A TF-IDF classifier trained only on training questions tied the rules on the pool (81.8%) and was at chance on the new set (`scripts/learned_router.py`).
+- **The runtime checks held up.** Escalating on a SQL error, an empty result, a decline or an invented value kept working (76.2% to 80.8%), and the 3B gate got all 12 should-decline questions right where the 7B alone got none.
+- **Two-model agreement is the best signal found.** When the tuned 3B and the 7B return the same result set the 7B is right 91 to 92% of the time (84 of 91 on the pool, 20 of 22 on the new set); when they disagree it is right 52 to 55% (`scripts/agreement_router.py`). Escalating on disagreement gave 85.1% at $0.67 per 1,000 on the pool and 84.6% on the new set, within noise of all-hosted. It was found after seeing the pool, so the new-set result is the out-of-sample check, and with 52 questions its size is not measurable.
+- **The live pipeline matches the simulation.** `nlsql/hybrid.py` runs gate, rules, 7B, checks and hosted fallback per question. On the 181 pool it scored 147 correct at $0.64 per 1,000, the same count and cost as the saved-answer simulation, and 35 of 36 on the decline set. In `sealed` mode (hosted model forbidden) every one of 300 network events on the held-out set went to the local model server, a deliberate test connection to a public address was blocked, and 7 of 52 questions were withheld for escalation (`docs/results/hybrid.md`, `nlsql/egress.py`). The egress monitor sees only this Python process.

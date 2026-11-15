@@ -7,6 +7,12 @@ needs several steps before the final query. Cheap, deterministic, explainable, a
 There is a second, runtime signal that needs no text rules: what the local model did. A database error, an empty result or a decline
 sends the question up to the frontier model (see `escalate`). The question rules decide where a question goes first; the runtime
 signal catches what the rules missed.
+
+Measured limits (see docs/results/heldout.md and docs/results/learned_router.md). The regular expressions were written after the
+test categories were known. On 181 questions they sent 31% to the frontier model and scored only slightly above a random router
+sending the same share. On 52 fresh questions phrased differently they matched 1 question and caught none of the 20 the local model
+got wrong. Treat the rules as a cheap, explainable first filter that depends on the wording of the questions; the runtime signals
+(`escalate`, `nlsql.invented`, and the agreement between two local models in scripts/agreement_router.py) are what carried the result.
 """
 
 from __future__ import annotations
