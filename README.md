@@ -251,3 +251,26 @@ Caveats: one hosted model, one prompt, one run per set (plus the 30-question rep
 - **Per 1,000 correct answers on the stress set:** local about $0.05, hosted $1.56. That folds accuracy into price and treats a wrong answer as costing nothing beyond its own price, which in an enterprise it does not.
 - **The prune-and-retry stack on the hosted model** did not change accuracy (112 right against 110, 6 gained and 4 lost, p 0.75; SQL errors 9 to 6; 143 calls for 126 questions), but showing only the likely tables cut input tokens from 4,219 to 1,830 per question and the Standard-tier cost from $1.59 to $0.93 per 1,000. For the 7B model the same stack was a plausible accuracy gain; for the stronger model its value is cost.
 - The free tier is where this lab's hosted runs lived (400 of the day's 500 requests). It is fine for synthetic data and useless for the data a real enterprise would ask about.
+
+## How close do the local setups get to the hosted model?
+
+Core + stress pool of 181 questions (core 55, hard 72, hard2 54) and the 36-question decline set (12 answerable controls, 24 that should be declined), scored against the hosted gemini-3.5-flash-lite. Everything below is computed from saved single-run answers (`scripts/route_eval.py`, `scripts/gate_eval.py`; results in `docs/results/routing*.md` and `gate.md`). A strategy only chooses which saved answer is used.
+
+| Setup | Core + stress | Share of hosted | Decline set | Cost per 1,000 questions |
+|---|---|---|---|---|
+| All hosted | 88.4% | 100% | 34 of 36 | $1.36 |
+| Tuned 3B router (rules, escalation, invented-value check) | 83.4% | 94% | 35 of 36 | $0.76 |
+| 3B decline gate + XiYan 7B + rules + escalation | 81.8% | 93% | 34 of 36 | $0.64 |
+| Tuned XiYan 3B router | 81.8% | 93% | 36 of 36 | $0.71 |
+| Tuned 3B router, trained without held-out test cells | 79.0% | 89% | 34 of 36 | $0.69 |
+| 3B gate + 7B, escalate on error, empty or invented value | 76.2% | 86% | 34 of 36 | $0.24 |
+| 3B gate + 7B, no escalation | 70.2% | 79% | 34 of 36 | $0.09 |
+| XiYan 7B alone | 69.1% | 78% | 15 of 36 | $0.03 |
+| Tuned 3B alone | 57.5% | 65% | 35 of 36 | $0.06 |
+
+- **Routine questions are near parity.** On the 49 answerable core questions XiYan 7B (tuned prompt, retry 2) gets 43 against 45 hosted; the tuned 3B models get 38 to 42. The gated setups match the hosted model on declines. The gap is on the stress sets (multi-step, window, time-bucket, defined-term, set-logic and correlated questions), which is what the rules send to the hosted model.
+- **What closes the gap is the safety net, not the model.** Without rules and escalation the best local setup is 70%, 18 points behind. With them it is 82 to 83%, 5 to 7 points behind, at 47 to 56% of the hosted cost. The difference to all-hosted stays statistically clear (sign test p 0.01 to 0.02).
+- **The gate fixes declines, not accuracy.** The 7B alone invents an answer for 20 of the 24 questions that should be declined; a 3B decline gate in front of it brings the decline set to 34 of 36. It falsely refused 3 answerable questions out of 181 and no control. Both models loaded need about 8.4 GB, so this does not fit the 4 GB card at once; the numbers come from saved answers, not a live pipeline.
+- **Quantizing the tuned 3B to Q8_0 GGUF in LM Studio cost nothing** (core 38 of 49, hard 35 of 72, hard2 30 of 54, declines 24 of 24) and cut time per question from 11 to 34 s on the Hugging Face server to 1.5 to 5 s.
+- **A data-leak check.** The older training files held pairs whose queries filter on a (table, column, value) cell a test query also uses (850 of 2,254 answer pairs; no test question itself). Retraining without them lowered the pool score by about 3 of 181 (101 against 104), within noise, though the retrain also had a third less data, so the two effects are not separated.
+- **Caveats.** All runs are single and the hosted model is not bit-repeatable. The routing rules were written after seeing the test categories, so the router rows are optimistic. The tuned models use a compact prompt with a selected subset of tables while the hosted model sees all 22 tables. The Qwen2.5-Coder-3B base is under the Qwen research licence; the XiYan 3B base is labelled Apache-2.0 on its model card but derives from the same Qwen base, so check before any commercial use.
