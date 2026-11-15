@@ -1,0 +1,189 @@
+{
+ "strategies": {
+  "core + stress (181 questions)": {
+   "All local (tuned8r2)": {
+    "correct": 101,
+    "n": 181,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.045
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 160,
+    "n": 181,
+    "sent_to_hosted": 181,
+    "usd_per_1000": 1.364
+   },
+   "Rules, 1+ family": {
+    "correct": 126,
+    "n": 181,
+    "sent_to_hosted": 57,
+    "usd_per_1000": 0.507
+   },
+   "Rules, 2+ families": {
+    "correct": 104,
+    "n": 181,
+    "sent_to_hosted": 5,
+    "usd_per_1000": 0.089
+   },
+   "Local, escalate on error or empty": {
+    "correct": 117,
+    "n": 181,
+    "sent_to_hosted": 20,
+    "usd_per_1000": 0.228
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 129,
+    "n": 181,
+    "sent_to_hosted": 40,
+    "usd_per_1000": 0.368
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 142,
+    "n": 181,
+    "sent_to_hosted": 81,
+    "usd_per_1000": 0.681
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 131,
+    "n": 181,
+    "sent_to_hosted": 44,
+    "usd_per_1000": 0.402
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 130,
+    "n": 181,
+    "sent_to_hosted": 42,
+    "usd_per_1000": 0.378
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 143,
+    "n": 181,
+    "sent_to_hosted": 83,
+    "usd_per_1000": 0.691
+   }
+  },
+  "decline set (36 questions)": {
+   "All local (tuned8r2)": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.017
+   },
+   "All hosted (gemini-3.5-flash-lite)": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 36,
+    "usd_per_1000": 1.343
+   },
+   "Rules, 1+ family": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 2,
+    "usd_per_1000": 0.09
+   },
+   "Rules, 2+ families": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.017
+   },
+   "Local, escalate on error or empty": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 0,
+    "usd_per_1000": 0.017
+   },
+   "Local, escalate on error, empty or decline": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.897
+   },
+   "Rules 1+, plus escalate on error, empty or decline": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 25,
+    "usd_per_1000": 0.933
+   },
+   "Rules 2+, plus escalate on error, empty or decline": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.897
+   },
+   "Local, escalate on error, empty, decline or invented value": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 24,
+    "usd_per_1000": 0.897
+   },
+   "Rules 1+, plus escalate on error, empty, decline or invented value": {
+    "correct": 34,
+    "n": 36,
+    "sent_to_hosted": 25,
+    "usd_per_1000": 0.933
+   }
+  }
+ },
+ "note": "accuracy = share of questions whose used answer passed the grader; cost per 1,000 questions at hosted Standard prices",
+ "training_share_routed": {
+  "decline_unanswerable": 0.065,
+  "fanout": 0.018,
+  "evidence": 0.579,
+  "aggregate": 0.017,
+  "set_ops": 0.182,
+  "decline_ambiguous": 0.054,
+  "window": 0.524,
+  "hierarchy": 0.099,
+  "state_codes": 0.014,
+  "pivot": 0.178,
+  "multi_join": 0.006,
+  "correlated": 0.236,
+  "date_time": 0.04,
+  "lookup_filter": 0.033,
+  "time_bucket": 0.907,
+  "cte_multistep": 0.132
+ },
+ "missed_ids": [
+  "L02",
+  "A08",
+  "J05",
+  "D04",
+  "D06",
+  "H03",
+  "HJ01",
+  "HJ02",
+  "HJ03",
+  "HJ04",
+  "HJ05",
+  "HJ08",
+  "HW05",
+  "HC02",
+  "HE02",
+  "HE03",
+  "HE06",
+  "HS04",
+  "HS05",
+  "HS07",
+  "HS08",
+  "HT02",
+  "HT06",
+  "HD03",
+  "HD05",
+  "HD08",
+  "HX03",
+  "HX04",
+  "HJ12",
+  "HW13",
+  "HC12",
+  "HE09",
+  "HE11",
+  "HS10",
+  "HS11",
+  "HT10",
+  "HT11",
+  "HD14",
+  "HX10",
+  "HX12"
+ ]
+}
