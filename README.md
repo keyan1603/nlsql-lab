@@ -274,3 +274,19 @@ Core + stress pool of 181 questions (core 55, hard 72, hard2 54) and the 36-ques
 - **Quantizing the tuned 3B to Q8_0 GGUF in LM Studio cost nothing** (core 38 of 49, hard 35 of 72, hard2 30 of 54, declines 24 of 24) and cut time per question from 11 to 34 s on the Hugging Face server to 1.5 to 5 s.
 - **A data-leak check.** The older training files held pairs whose queries filter on a (table, column, value) cell a test query also uses (850 of 2,254 answer pairs; no test question itself). Retraining without them lowered the pool score by about 3 of 181 (101 against 104), within noise, though the retrain also had a third less data, so the two effects are not separated.
 - **Caveats.** All runs are single and the hosted model is not bit-repeatable. The routing rules were written after seeing the test categories, so the router rows are optimistic. The tuned models use a compact prompt with a selected subset of tables while the hosted model sees all 22 tables. The Qwen2.5-Coder-3B base is under the Qwen research licence; the XiYan 3B base is labelled Apache-2.0 on its model card but derives from the same Qwen base, so check before any commercial use.
+
+## Running it live
+
+The setups in the table above were computed from saved answers. `nlsql/hybrid.py` is the same strategy as a live pipeline: the tuned 3B gate decides decline or proceed, `nlsql.router` rules send multi-step questions up, the XiYan 7B writes the SQL (tuned prompt, 4 decline examples, retry 2), the SQL runs through the guard, and a database error, an empty result or an invented value escalates to the hosted model. Every tier is an injectable callable, so `tests/test_hybrid.py` covers the control flow with fakes and needs no model or network.
+
+- **Policy.** `open` allows the hosted tier. `sealed` forbids it: a question that would escalate returns a structured "escalation required, withheld by policy" result and the hosted function is never called. `redacted` (hosted after masking literals) is deliberately not implemented, because the literals are what the question asks about; asking for it raises.
+- **Every answer is a record**: tier that answered, tiers touched in order, escalation source and reason, seconds and tokens per tier, estimated cost (hosted price and electricity from `scripts/cost_model.py`), and `left_boundary`, true only if the hosted function was called. `AuditLog` appends one JSON line per question (ids, hashes, tiers, reasons; never question text, SQL or keys).
+- **Egress proof.** `nlsql/egress.py` wraps the socket layer and, in sealed mode, raises on any DNS lookup or connection that is not loopback or the MySQL endpoint, recording every attempt. `scripts/run_hybrid.py` runs it around a sealed run and writes the report.
+- **Run it.** Load both models in LM Studio (server on port 1235; the 4 GB GPU holds one at a time, so see `docs/results/hybrid.md` for the partial-offload settings used), then:
+
+```bash
+venv/Scripts/python scripts/run_hybrid.py --label sealed-heldout --policy sealed --sets heldout
+venv/Scripts/python scripts/run_hybrid.py --label open-all --policy open --sets core,hard,hard2,decline,heldout
+```
+
+Output goes to `runs/hybrid-<label>.*` and `docs/results/hybrid.md` (regenerated from the saved runs by `scripts/hybrid_report.py`). The open policy respects `GEMINI_DAILY_CAP`; a capped run stops cleanly and resumes when the command is repeated.
