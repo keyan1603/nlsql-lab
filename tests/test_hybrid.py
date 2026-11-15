@@ -248,3 +248,111 @@ def test_report_aggregation_counts_withheld_escalation_and_cost():
     assert a["n"] == 2 and a["passed"] == 1 and a["withheld"] == 1 and a["answered"] == 1
     assert a["escalated"] == 1 and a["escalation_by_source"] == {"rules": 1} and a["left_boundary"] == 0 and a["hosted_calls"] == 0
     assert a["usd_per_1000"]["hosted"] == 0
+
+
+# ---------------------------------------------------------------- agreement between the 3B gate and the 7B
+GATE_SQL = "```sql\nSELECT COUNT(*) FROM cust_master\n```"
+SQL7 = "```sql\nSELECT COUNT(*) AS n FROM cust_master\n```"
+
+
+def result_executor(by_sql):
+    """An executor whose result rows depend on the SQL text: by_sql maps a substring to (status, rows)."""
+    calls = []
+
+    def run(question, sql):
+        calls.append(sql)
+        for key, (status, rows) in by_sql.items():
+            if key in sql:
+                return ExecOutcome(status, "", len(rows), "allowed", "", rows)
+        return ExecOutcome("error", "unknown", 0, "refused", "")
+    run.calls = calls
+    return run
+
+
+def agree_pipe(gate_text=GATE_SQL, sql_text=SQL7, ex=None, policy="open", **kw):
+    ex = ex or result_executor({"AS n": ("ok", [(60,)]), "COUNT(*) FROM": ("ok", [(60,)])})
+    gate, sql, hosted = Fake(gate_text), Fake(sql_text), Fake(OK_SQL, 100, 20)
+    return HybridPipeline(gate, sql, hosted, ex, policy=policy, agreement=True, **kw), gate, sql, hosted, ex
+
+
+def test_agreement_accepts_the_7b_when_both_result_sets_match():
+    p, gate, sql, hosted, ex = agree_pipe()
+    r = p.answer("G1", ROUTINE)
+    assert r.agree is True and r.gate_sql_present and r.answered_by == "sql" and hosted.calls == 0 and len(ex.calls) == 2
+
+
+def test_agreement_compares_order_insensitively():
+    ex = result_executor({"AS n": ("ok", [(1,), (2,)]), "FROM cust_master": ("ok", [(2,), (1,)])})
+    r = agree_pipe(ex=ex)[0].answer("G2", ROUTINE)
+    assert r.agree is True
+
+
+def test_disagreement_escalates_to_hosted_with_the_reason():
+    ex = result_executor({"AS n": ("ok", [(60,)]), "COUNT(*) FROM": ("ok", [(59,)])})
+    p, gate, sql, hosted, _ = agree_pipe(ex=ex)
+    r = p.answer("G3", ROUTINE)
+    assert r.agree is False and r.answered_by == "hosted" and r.left_boundary and hosted.calls == 1
+    assert r.escalation_source == "agreement" and r.escalation_reason == "the 3B and 7B disagree"
+
+
+def test_sealed_policy_withholds_on_disagreement_and_never_calls_hosted():
+    ex = result_executor({"AS n": ("ok", [(60,)]), "COUNT(*) FROM": ("ok", [(59,)])})
+    p, gate, sql, hosted, _ = agree_pipe(ex=ex, policy="sealed")
+    r = p.answer("G4", ROUTINE)
+    assert hosted.calls == 0 and r.withheld and r.left_boundary is False and r.agree is False
+    assert r.withheld_result["reason"] == "the 3B and 7B disagree" and r.local_candidate_sql is not None
+
+
+def test_gate_decline_is_final_in_agreement_mode_and_the_7b_never_runs():
+    p, gate, sql, hosted, _ = agree_pipe(gate_text="-- CLARIFY: which period?")
+    r = p.answer("G5", ROUTINE)
+    assert r.answered_by == "gate" and sql.calls == 0 and r.agree is None and r.gate_sql_present is False
+
+
+def test_7b_decline_gives_no_agreement_signal():
+    p, gate, sql, hosted, _ = agree_pipe(sql_text="-- UNANSWERABLE: no")
+    r = p.answer("G6", ROUTINE)
+    assert r.agree is None and r.answered_by == "sql" and r.final_kind == "refusal" and hosted.calls == 0
+
+
+def test_gate_sql_that_errors_is_not_a_disagreement():
+    ex = result_executor({"AS n": ("ok", [(60,)])})                    # the gate's text matches nothing: the fake executor reports an error
+    p, gate, sql, hosted, _ = agree_pipe(ex=ex)
+    r = p.answer("G7", ROUTINE)
+    assert r.agree is None and r.answered_by == "sql" and hosted.calls == 0
+
+
+def test_7b_error_escalates_through_the_ordinary_check_and_skips_the_comparison():
+    ex = result_executor({"AS n": ("error", []), "COUNT(*) FROM": ("ok", [(60,)])})
+    p, gate, sql, hosted, _ = agree_pipe(ex=ex)
+    r = p.answer("G8", ROUTINE)
+    assert r.agree is None and r.escalation_source == "postcheck" and r.answered_by == "hosted"
+
+
+def test_gate_with_no_sql_text_is_no_signal():
+    p, gate, sql, hosted, _ = agree_pipe(gate_text="I think so.")
+    r = p.answer("G9", ROUTINE)
+    assert r.agree is None and r.gate_sql_present is False and r.answered_by == "sql"
+
+
+def test_rules_are_off_in_agreement_mode_unless_requested():
+    p, gate, sql, hosted, _ = agree_pipe()
+    r = p.answer("G10", HARD)
+    assert r.answered_by == "sql" and r.rules_families and hosted.calls == 0     # matched but not acted on
+    p2, *_ = agree_pipe(rules=True)
+    assert p2.answer("G11", HARD).escalation_source == "rules"
+
+
+def test_agreement_fields_are_in_the_audit_record(tmp_path):
+    ex = result_executor({"AS n": ("ok", [(60,)]), "COUNT(*) FROM": ("ok", [(59,)])})
+    p, *_ = agree_pipe(ex=ex, audit=AuditLog(tmp_path / "a.jsonl"))
+    p.answer("G12", ROUTINE)
+    line = json.loads((tmp_path / "a.jsonl").read_text(encoding="utf-8"))
+    assert line["agree"] is False and line["gate_sql_present"] is True and line["escalation_source"] == "agreement"
+    assert "60" not in json.dumps(line)                                         # result values never reach the log
+
+
+def test_without_agreement_the_gate_sql_is_ignored():
+    p, gate, sql, hosted, ex = build(gate=Fake(GATE_SQL), policy="open")
+    r = p.answer("G13", ROUTINE)
+    assert r.agree is None and r.gate_sql_present is False and len(ex.calls) == 1

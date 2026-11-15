@@ -28,6 +28,7 @@ from nlsql.pipeline import Options, solve
 from nlsql.prompts import build_messages, build_tuned_messages
 
 GATE_MAX_TOKENS = 48
+GATE_FULL_MAX_TOKENS = 512        # agreement mode: the gate's whole answer, as in the saved tuned6 runs (--max-tokens 512)
 SQL_OPTIONS = dict(prompt="tuned", decline_shots=4, retry=2)           # == pipeline tag tuned-retry2-dshots4
 HOSTED_MODEL = "gemini-3.5-flash-lite"
 
@@ -65,7 +66,7 @@ def make_executor(conn, guard: Guard | None = None):
     def execute(question: str, sql: str) -> ExecOutcome:
         r = guard.execute(conn, question, sql)
         if r.decision in ("allowed", "masked"):
-            return ExecOutcome("ok" if r.rows else "empty", "", len(r.rows), r.decision, r.layer)
+            return ExecOutcome("ok" if r.rows else "empty", "", len(r.rows), r.decision, r.layer, list(r.rows))
         # refused (parser, policy or database), timeout, capped: the local answer cannot be used as it is
         return ExecOutcome("error", f"{r.layer}: {r.reason}"[:300], 0, r.decision, r.layer)
     return execute

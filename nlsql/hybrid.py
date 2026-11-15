@@ -86,12 +86,21 @@ class ExecOutcome:
     rows: int = 0
     decision: str = ""                  # the guard's decision: allowed | masked | refused | timeout | capped
     layer: str = ""
+    result: list | None = None          # the result rows, kept in memory only for the agreement check; never written to a record or log
 
 
 GateTier = Callable[[str], TierOutput]
 SqlTier = Callable[[str], TierOutput]
 HostedTier = Callable[[str], TierOutput]
 Executor = Callable[[str, str], ExecOutcome]            # (question, sql) -> outcome
+Comparator = Callable[[list, list], bool]               # (rows_a, rows_b) -> True when the two result sets are the same answer
+
+
+def same_result(a: list, b: list) -> bool:
+    """The comparison scripts/agreement_router.py uses: nlsql.grader.compare_results, order-insensitive and exact (tolerance 0).
+    It returns 'strict', 'perm' or 'lenient' for a match and None otherwise; the saved-answer analysis counts any non-None as agreement."""
+    from nlsql.grader import compare_results
+    return compare_results(a, b, order_matters=False, tol=0.0) is not None
 
 
 # ---------------------------------------------------------------- cost
@@ -127,8 +136,8 @@ class AuditLog:
     key: the fields are a fixed whitelist (`FIELDS`), so a new piece of data cannot leak in by accident."""
 
     FIELDS = ("ts", "run", "qid", "question_sha256", "policy", "order", "tiers", "answered_by", "final_kind", "status",
-              "escalation_source", "escalation_reason", "withheld", "left_boundary", "gate_decision", "latency_s", "tokens",
-              "cost_usd", "error")
+              "escalation_source", "escalation_reason", "withheld", "left_boundary", "gate_decision", "gate_sql_present", "agree",
+              "latency_s", "tokens", "cost_usd", "error")
 
     def __init__(self, path: Path, run: str = ""):
         self.path = Path(path)
@@ -141,7 +150,7 @@ class AuditLog:
                 "question_sha256": hashlib.sha256(rec.question.encode("utf-8")).hexdigest()[:16], "policy": rec.policy, "order": rec.order,
                 "tiers": rec.tiers, "answered_by": rec.answered_by, "final_kind": rec.final_kind, "status": rec.status,
                 "escalation_source": rec.escalation_source, "escalation_reason": rec.escalation_reason, "withheld": rec.withheld,
-                "left_boundary": rec.left_boundary, "gate_decision": rec.gate_decision, "latency_s": rec.latency_s, "tokens": rec.tokens,
+                "left_boundary": rec.left_boundary, "gate_decision": rec.gate_decision, "gate_sql_present": rec.gate_sql_present, "agree": rec.agree, "latency_s": rec.latency_s, "tokens": rec.tokens,
                 "cost_usd": rec.cost_usd, "error": rec.error}
         assert set(line) == set(self.FIELDS)
         with self._lock, self.path.open("a", encoding="utf-8") as f:
@@ -171,6 +180,8 @@ class HybridRecord:
     left_boundary: bool = False
     gate_decision: str = ""                              # sql (let through) | refusal | clarify | skipped | error
     rules_families: list = field(default_factory=list)
+    gate_sql_present: bool = False                       # the gate (3B) produced a SQL statement (agreement mode only)
+    agree: bool | None = None                            # 3B and 7B result sets equal; None when the check was not applicable
     latency_s: dict = field(default_factory=dict)        # wall seconds per tier
     tokens: dict = field(default_factory=dict)           # per tier: {"in": n, "out": n, "calls": n}
     cost_usd: dict = field(default_factory=dict)         # local, hosted, total
@@ -185,15 +196,24 @@ class HybridRecord:
 class HybridPipeline:
     def __init__(self, gate: GateTier, sql: SqlTier, hosted: HostedTier, executor: Executor, policy: Policy | str = Policy.OPEN,
                  rules_threshold: int = 1, order: str = "gate_first", escalate_on_decline: bool = False,
+                 agreement: bool = False, rules: bool | None = None, compare: Comparator = same_result,
                  cost: CostEstimator | None = None, audit: AuditLog | None = None, clock: Callable[[], float] = time.perf_counter):
         """gate, sql, hosted: callables question -> TierOutput. executor: (question, sql) -> ExecOutcome.
         escalate_on_decline: when False (default, as in the saved-answer simulation) a decline from the 7B after the gate let the
-        question through is accepted as the answer; when True it escalates like any other untrusted local result."""
+        question through is accepted as the answer; when True it escalates like any other untrusted local result.
+        agreement: the gate tier must then return its FULL answer (not a clipped one). When the gate and the 7B both produced SQL
+        that runs, both result sets are compared (`compare`, default nlsql.grader.compare_results, order-insensitive and exact); a
+        mismatch escalates with the reason "the 3B and 7B disagree". If either side has no runnable SQL there is no agreement signal
+        (agree stays None) and the ordinary error / empty / invented-value checks decide.
+        rules: use the wording rules at all. Default: on without agreement, OFF with it (the rules did not transfer to the held-out
+        set, docs/results/heldout.md); pass rules=True to combine them."""
         if order not in ("gate_first", "rules_first"):
             raise ValueError("order must be 'gate_first' or 'rules_first'")
         self.gate, self.sql_tier, self.hosted_tier, self.executor = gate, sql, hosted, executor
         self.policy = Policy.parse(policy) if not isinstance(policy, Policy) else policy
         self.rules_threshold, self.order, self.escalate_on_decline = rules_threshold, order, escalate_on_decline
+        self.agreement, self.compare = agreement, compare
+        self.use_rules = (not agreement) if rules is None else rules
         self.cost, self.audit, self.clock = cost, audit, clock
 
     # -- helpers
@@ -260,17 +280,24 @@ class HybridPipeline:
     def answer(self, qid: str, question: str) -> HybridRecord:
         rec = HybridRecord(qid=qid, question=question, policy=self.policy.value, order=self.order)
         route = router.route(question, self.rules_threshold)
-        rec.rules_families = list(route.families)
+        if not self.use_rules:                        # rules off: still report the families that matched, but never act on them
+            rec.rules_families = list(route.families)
+            route = router.Route(router.LOCAL, route.families, "rules disabled")
+        else:
+            rec.rules_families = list(route.families)
 
         if self.order == "rules_first" and route.target == router.FRONTIER:
             rec.gate_decision = "skipped"
             return self._escalate(rec, "rules", route.reason, question)
 
         # 1. gate
+        gate_sql = None
         try:
             g = self._timed(rec, GATE, self.gate, question)
             gp = extract(g.text)
             rec.gate_decision = gp.kind
+            gate_sql = gp.sql if (self.agreement and gp.kind == "sql") else None
+            rec.gate_sql_present = bool(gate_sql and gate_sql.strip())
             if gp.kind in ("refusal", "clarify"):
                 rec.answered_by, rec.final_kind, rec.final_text = GATE, gp.kind, g.text
                 return self._finish(rec)
@@ -302,7 +329,18 @@ class HybridPipeline:
             rec.answered_by, rec.final_kind, rec.final_text = SQL, pred.kind, s.text
             return self._finish(rec)
         res = self._execute(rec, question, pred.sql, "local")
+        # Agreement: only defined when BOTH sides produced SQL that ran (error is not a signal; the checks below already handle it).
+        # Computed before the other checks so the record shows it even when something else escalates the question first.
+        if self.agreement and gate_sql and res.status != "error":
+            gres = self._execute(rec, question, gate_sql, "gate")
+            if gres.status != "error" and res.result is not None and gres.result is not None:
+                try:
+                    rec.agree = bool(self.compare(gres.result, res.result))
+                except Exception:                     # an unexpected value type in a result: no signal rather than a crash
+                    rec.agree = None
         reason = router.escalate("sql", res.status, question, pred.sql)
+        if not reason and rec.agree is False:
+            return self._escalate(rec, "agreement", "the 3B and 7B disagree", question)
         if reason:
             return self._escalate(rec, "postcheck", reason, question)
         rec.answered_by, rec.final_kind, rec.final_text, rec.final_sql, rec.status = SQL, "sql", s.text, pred.sql, res.status
