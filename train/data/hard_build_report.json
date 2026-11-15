@@ -1,0 +1,42 @@
+{
+ "filters": {
+  "dropped: filters on a held-out cell": 428,
+  "kept": 676,
+  "blind pass disagrees": 122,
+  "blind pass declined": 6,
+  "dropped: test look-alike": 1
+ },
+ "train_rows": 1006,
+ "val_rows": 80,
+ "by_source": {
+  "replay_easy_train.jsonl": 100,
+  "replay_decline_train.jsonl": 150,
+  "new_hard_teacher_verified": 636,
+  "replay_terse_cont2": 120
+ },
+ "new_hard_by_technique": {
+  "window": 134,
+  "evidence": 74,
+  "correlated": 113,
+  "cte_multistep": 119,
+  "set_ops": 86,
+  "time_bucket": 110
+ },
+ "new_hard_by_family": {
+  "window": 134,
+  "defined_term": 74,
+  "correlated": 113,
+  "multi_step": 119,
+  "set_logic": 86,
+  "time_bucket": 110
+ },
+ "new_hard_by_router_regex_family": {
+  "no_router_cue": 459,
+  "defined_term": 42,
+  "multi_step": 19,
+  "set_logic": 21,
+  "window": 49,
+  "time_bucket": 37,
+  "correlated": 19
+ }
+}

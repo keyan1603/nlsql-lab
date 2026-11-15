@@ -1,0 +1,108 @@
+{
+ "mode": "strict",
+ "files": {
+  "train.jsonl": {
+   "pairs": 1733,
+   "declines": 329,
+   "dropped_for_held_out_cells": 850,
+   "router_regex_families": {
+    "no_router_cue": 1084,
+    "window": 101,
+    "time_bucket": 93,
+    "set_logic": 33,
+    "defined_term": 51,
+    "multi_step": 31,
+    "correlated": 21
+   },
+   "sources": {
+    "original teacher-verified pool": 1733
+   }
+  },
+  "val.jsonl": {
+   "pairs": 133,
+   "declines": 39,
+   "dropped_for_held_out_cells": 62,
+   "router_regex_families": {
+    "no_router_cue": 72,
+    "defined_term": 2,
+    "time_bucket": 8,
+    "window": 9,
+    "correlated": 1,
+    "set_logic": 2
+   },
+   "sources": {
+    "original teacher-verified pool": 133
+   }
+  },
+  "hard_train.jsonl": {
+   "pairs": 943,
+   "declines": 169,
+   "dropped_for_held_out_cells": 63,
+   "router_regex_families": {
+    "no_router_cue": 588,
+    "defined_term": 46,
+    "multi_step": 20,
+    "set_logic": 22,
+    "window": 51,
+    "time_bucket": 37,
+    "correlated": 20
+   },
+   "sources": {
+    "replay_easy_train.jsonl": 61,
+    "replay_decline_train.jsonl": 150,
+    "new_hard_teacher_verified": 636,
+    "replay_terse_cont2": 96
+   }
+  },
+  "hard_val.jsonl": {
+   "pairs": 65,
+   "declines": 5,
+   "dropped_for_held_out_cells": 15,
+   "router_regex_families": {
+    "no_router_cue": 43,
+    "time_bucket": 6,
+    "defined_term": 5,
+    "set_logic": 2,
+    "window": 3,
+    "correlated": 2
+   },
+   "sources": {
+    "new_hard_teacher_verified": 40,
+    "replay_val.jsonl": 25
+   }
+  },
+  "cont2_train.jsonl": {
+   "pairs": 598,
+   "declines": 125,
+   "dropped_for_held_out_cells": 145,
+   "router_regex_families": {
+    "no_router_cue": 427,
+    "window": 14,
+    "time_bucket": 12,
+    "set_logic": 8,
+    "defined_term": 10,
+    "multi_step": 7
+   },
+   "sources": {
+    "original teacher-verified pool": 598
+   }
+  },
+  "cont2_val.jsonl": {
+   "pairs": 175,
+   "declines": 48,
+   "dropped_for_held_out_cells": 62,
+   "router_regex_families": {
+    "no_router_cue": 105,
+    "defined_term": 2,
+    "time_bucket": 8,
+    "window": 9,
+    "correlated": 1,
+    "set_logic": 2
+   },
+   "sources": {
+    "original teacher-verified pool": 175
+   }
+  }
+ },
+ "overlap_with_test_questions": 0
+}
