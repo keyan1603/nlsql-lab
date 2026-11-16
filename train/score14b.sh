@@ -9,4 +9,6 @@ for s in core hard hard2 heldout decline; do
   ./venv/Scripts/python.exe scripts/run_eval.py --model xiyan14b --prompt tuned --decline-shots 4 --retry 2 --max-tokens 1024 --set $s --label xiyan14b-final-$s > train/score14b_$s.log 2>&1
 done
 lms unload --all > /dev/null 2>&1
-echo done > train/score14b.done
+ok=1
+for s in core hard hard2 heldout decline; do [ -f runs/xiyan14b-final-$s.summary.json ] || ok=0; done
+[ "$ok" = 1 ] && echo done > train/score14b.done || echo "scoring incomplete, no marker written" >&2

@@ -280,11 +280,9 @@ class HybridPipeline:
     def answer(self, qid: str, question: str) -> HybridRecord:
         rec = HybridRecord(qid=qid, question=question, policy=self.policy.value, order=self.order)
         route = router.route(question, self.rules_threshold)
-        if not self.use_rules:                        # rules off: still report the families that matched, but never act on them
-            rec.rules_families = list(route.families)
+        rec.rules_families = list(route.families)     # always reported, even when the rules are not acted on
+        if not self.use_rules:
             route = router.Route(router.LOCAL, route.families, "rules disabled")
-        else:
-            rec.rules_families = list(route.families)
 
         if self.order == "rules_first" and route.target == router.FRONTIER:
             rec.gate_decision = "skipped"

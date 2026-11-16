@@ -126,7 +126,7 @@ def render() -> str:
             L.append(f"| {name} | {a['answerable_correct']} of {a['answerable']} | {a['declined_correctly']} of {a['should_decline']} | {a['answered']} / {a['passed_of_answered']} ({_pct(a['passed_of_answered'], a['answered'])}) | "
                      f"{a['withheld']} | {a['withheld_candidate_passed']} of {a['withheld_candidates']} | {a['hosted_tokens_in']:,} / {a['hosted_tokens_out']:,} | {lm['gate'] or 'n/a'} / {lm['sql'] or 'n/a'} / {lm['hosted'] or 'n/a'} | {a['latency_p95_s']} | {a['tier_errors']} |")
         L.append("")
-        if s["policy"] == "open" and s["order"] == "gate_first+agreement":
+        if s["policy"] == "open" and "+agreement" in s["order"]:
             AG = "... plus escalate when the 3B and 7B disagree"
             sims = {}
             for nm, fn in (("pool", "agreement_router.json"), ("held-out", "heldout_agreement_router.json")):
