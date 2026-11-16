@@ -126,7 +126,23 @@ def render() -> str:
             L.append(f"| {name} | {a['answerable_correct']} of {a['answerable']} | {a['declined_correctly']} of {a['should_decline']} | {a['answered']} / {a['passed_of_answered']} ({_pct(a['passed_of_answered'], a['answered'])}) | "
                      f"{a['withheld']} | {a['withheld_candidate_passed']} of {a['withheld_candidates']} | {a['hosted_tokens_in']:,} / {a['hosted_tokens_out']:,} | {lm['gate'] or 'n/a'} / {lm['sql'] or 'n/a'} / {lm['hosted'] or 'n/a'} | {a['latency_p95_s']} | {a['tier_errors']} |")
         L.append("")
-        if s["policy"] == "open":
+        if s["policy"] == "open" and s["order"] == "gate_first+agreement":
+            AG = "... plus escalate when the 3B and 7B disagree"
+            sims = {}
+            for nm, fn in (("pool", "agreement_router.json"), ("held-out", "heldout_agreement_router.json")):
+                if (DOCS / fn).exists():
+                    sims[nm] = json.loads((DOCS / fn).read_text(encoding="utf-8")).get(AG)
+            L += ["Live against the saved-answer simulation of the same strategy (`docs/results/agreement_router.md`, 3B and 7B disagreement, rules off).", "",
+                  "| Pool | Live correct | Live USD per 1,000 | Simulated correct | Simulated USD per 1,000 |", "|---|---|---|---|---|"]
+            for name, a in s["pools"].items():
+                key = "pool" if name.startswith("core") else "held-out" if name.startswith("held") else None
+                sim = sims.get(key) if key else None
+                if sim:
+                    L.append(f"| {name} | {a['passed']} of {a['n']} ({_pct(a['passed'], a['n'])}) | ${a['usd_per_1000']['total']:.2f} | {sim['correct']} of {sim['n']} ({_pct(sim['correct'], sim['n'])}) | ${sim['usd_per_1000']:.2f} |")
+                else:
+                    L.append(f"| {name} | {a['passed']} of {a['n']} ({_pct(a['passed'], a['n'])}) | ${a['usd_per_1000']['total']:.2f} | not simulated | |")
+            L.append("")
+        elif s["policy"] == "open":
             sim_row = SIM_ROWS[s["order"]]
             L += [f"Live against the saved-answer simulation (`docs/results/gate.md`; simulated row: {sim_row}).", "",
                   "| Pool | Live correct | Live USD per 1,000 | Simulated correct | Simulated USD per 1,000 | All hosted, simulated (correct, USD per 1,000) |", "|---|---|---|---|---|---|"]
