@@ -88,6 +88,8 @@ def main() -> int:
     ap.add_argument("--rules-threshold", type=int, default=1)
     ap.add_argument("--agreement", action="store_true", help="escalate when the 3B gate's SQL and the 7B's SQL return different result sets. "
                     "The gate then writes its full answer (512 tokens) instead of a clipped one, and the wording rules are OFF unless --with-rules")
+    ap.add_argument("--confidence-threshold", type=float, default=None, help="single-model mode: the SQL model is its own gate (no 3B), and a SQL answer whose mean token "
+                    "log-probability is below this value escalates. Chosen on the pool: -0.062 (docs/results/confidence_signal.md)")
     ap.add_argument("--with-rules", action="store_true", help="with --agreement: also apply the wording rules")
     ap.add_argument("--gate-model", default=GATE_MODEL)
     ap.add_argument("--sql-model", default=SQL_MODEL)
@@ -119,7 +121,8 @@ def main() -> int:
             p.unlink(missing_ok=True)
 
     served = llm.list_models(args.base_url)
-    for m in (args.gate_model, args.sql_model):
+    conf = args.confidence_threshold is not None
+    for m in ((args.sql_model,) if conf else (args.gate_model, args.sql_model)):
         if m not in served:
             print(f"model {m!r} is not loaded in LM Studio (served: {served}); load it first", file=sys.stderr)
             return 2
@@ -134,7 +137,7 @@ def main() -> int:
     executor = hybrid_live.make_executor(conn, guard)
 
     # Warm-up: make sure both models answer before the clock starts (weights are paged in lazily). Excluded from every latency.
-    for m in (args.gate_model, args.sql_model):
+    for m in ((args.sql_model,) if conf else (args.gate_model, args.sql_model)):
         w = llm.chat(m, [{"role": "user", "content": "Reply with the word ready."}], max_tokens=4, base_url=args.base_url)
         print(f"warm-up {m}: {w.latency_s:.1f}s", flush=True)
 
@@ -162,9 +165,11 @@ def main() -> int:
             if args.limit:
                 questions = questions[: args.limit]
             hosted = hybrid_live.make_hosted(EXTENDED[s])
-            sql = hybrid_live.make_sql(args.sql_model, conn, extended=EXTENDED[s])
+            sql = (hybrid_live.make_sql_confidence(args.sql_model, args.base_url, extended=EXTENDED[s]) if conf
+                   else hybrid_live.make_sql(args.sql_model, conn, extended=EXTENDED[s]))
             pipe = HybridPipeline(gate, sql, hosted, executor, policy=policy, rules_threshold=args.rules_threshold, order=args.order,
-                                  agreement=args.agreement, rules=(True if args.with_rules else None), cost=cost, audit=audit)
+                                  agreement=args.agreement, rules=(True if args.with_rules else None), cost=cost, audit=audit,
+                                  confidence_threshold=args.confidence_threshold)
             gold_cache: dict = {}
             for i, q in enumerate(questions, start=1):
                 if (s, q.id) in saved:
@@ -178,7 +183,7 @@ def main() -> int:
                 out_path.write_text("\n".join(json.dumps(r) for r in saved.values()) + "\n", encoding="utf-8")
                 mark = "ok  " if verdict["passed"] else "FAIL"
                 print(f"[{s} {i:3d}/{len(questions)}] {q.id} {mark} {verdict['outcome']:16s} {'>'.join(rec.tiers):16s} {rec.latency_s['total']:6.1f}s"
-                      f"{'  ESC:' + rec.escalation_source if rec.escalation_source else ''}{'  agree=' + str(rec.agree) if args.agreement else ''}", flush=True)
+                      f"{'  ESC:' + rec.escalation_source if rec.escalation_source else ''}{'  agree=' + str(rec.agree) if args.agreement else ''}{'  conf=%.3f' % rec.confidence if conf and rec.confidence is not None else ''}", flush=True)
             if stopped:
                 print(stopped, flush=True)
                 break
@@ -189,7 +194,7 @@ def main() -> int:
         f.write(json.dumps(egress) + "\n")
 
     from hybrid_report import summarize_run
-    summary = summarize_run(args.label, policy.value, args.order + ("+agreement" + ("+rules" if args.with_rules else "") if args.agreement else ""), saved, stopped, sets, {"gate": args.gate_model, "sql": args.sql_model})
+    summary = summarize_run(args.label, policy.value, args.order + ("+agreement" + ("+rules" if args.with_rules else "") if args.agreement else "") + ("+confidence" if conf else ""), saved, stopped, sets, {"gate": args.gate_model, "sql": args.sql_model})
     (RUNS / f"hybrid-{args.label}.summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     write_report()
     print(json.dumps({k: summary[k] for k in ("label", "policy", "pools")}, indent=1))

@@ -356,3 +356,46 @@ def test_without_agreement_the_gate_sql_is_ignored():
     p, gate, sql, hosted, ex = build(gate=Fake(GATE_SQL), policy="open")
     r = p.answer("G13", ROUTINE)
     assert r.agree is None and r.gate_sql_present is False and len(ex.calls) == 1
+
+
+# ---------------------------------------------------------------- single-model mode: the 7B's own token probability decides
+class Conf(Fake):
+    def __init__(self, text, conf):
+        super().__init__(text)
+        self.conf = conf
+
+    def __call__(self, question):
+        out = super().__call__(question)
+        out.confidence = self.conf
+        return out
+
+
+def conf_pipe(conf, policy="open", text=OK_SQL, **kw):
+    gate, hosted, ex = Fake("```sql\nSELECT 1\n```"), Fake("```sql\nSELECT COUNT(*) FROM cust_master\n```", 100, 20), executor()
+    sql = Conf(text, conf)
+    return HybridPipeline(gate, sql, hosted, ex, policy=policy, confidence_threshold=-0.06, **kw), gate, sql, hosted
+
+
+def test_confident_answer_is_kept_and_the_gate_never_runs():
+    p, gate, sql, hosted = conf_pipe(-0.02)
+    r = p.answer("Q1", ROUTINE)
+    assert r.answered_by == "sql" and r.tiers == ["sql"] and gate.calls == 0 and hosted.calls == 0
+    assert r.gate_decision == "skipped" and r.confidence == -0.02
+
+
+def test_low_confidence_escalates_to_hosted_when_open():
+    p, gate, sql, hosted = conf_pipe(-0.2)
+    r = p.answer("Q1", ROUTINE)
+    assert r.answered_by == "hosted" and r.escalation_source == "confidence" and hosted.calls == 1 and r.left_boundary
+
+
+def test_low_confidence_is_withheld_when_sealed():
+    p, gate, sql, hosted = conf_pipe(-0.2, policy="sealed")
+    r = p.answer("Q1", ROUTINE)
+    assert r.withheld and hosted.calls == 0 and r.local_candidate_sql and not r.left_boundary
+
+
+def test_a_decline_is_not_second_guessed_by_confidence():
+    p, gate, sql, hosted = conf_pipe(-0.5, text="-- UNANSWERABLE: no such data")
+    r = p.answer("Q1", ROUTINE)
+    assert r.final_kind == "refusal" and hosted.calls == 0 and r.answered_by == "sql"

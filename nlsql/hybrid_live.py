@@ -24,7 +24,7 @@ from __future__ import annotations
 from nlsql import db, llm
 from nlsql.guard import Guard
 from nlsql.hybrid import ExecOutcome, TierOutput
-from nlsql.pipeline import Options, solve
+from nlsql.pipeline import Options, build, solve
 from nlsql.prompts import build_messages, build_tuned_messages
 
 GATE_MAX_TOKENS = 48
@@ -48,6 +48,26 @@ def make_sql(model: str, conn, extended: bool = True, max_tokens: int = 1024):
     def sql(question: str) -> TierOutput:
         r = solve(model, question, opts, conn=conn, max_tokens=max_tokens)
         return TierOutput(r.text, r.latency_s, r.tokens_in, r.tokens_out, int(r.info.get("calls", 1)))
+    return sql
+
+
+def make_sql_confidence(model: str, base_url: str, extended: bool = True, max_tokens: int = 1024):
+    """Single-model tier: ONE call, no repair loop (the configuration docs/results/confidence_signal.md measured), asking LM Studio for
+    per-token log-probabilities. Reports their mean as `confidence`."""
+    import json, time, urllib.request
+    opts = Options(prompt="tuned", decline_shots=4, retry=0, extended=extended, comments=True)
+
+    def sql(question: str) -> TierOutput:
+        messages, _ = build(question, opts)
+        body = json.dumps({"model": model, "messages": messages, "temperature": 0.0, "max_tokens": max_tokens, "stream": False, "logprobs": True}).encode()
+        req = urllib.request.Request(f"{base_url}/chat/completions", data=body, headers={"Content-Type": "application/json"})
+        t0 = time.perf_counter()
+        with urllib.request.urlopen(req, timeout=900) as r:
+            data = json.load(r)
+        ch, usage = data["choices"][0], data.get("usage") or {}
+        lps = [t["logprob"] for t in (ch.get("logprobs") or {}).get("content", [])]
+        return TierOutput(ch["message"].get("content") or "", time.perf_counter() - t0, usage.get("prompt_tokens", 0),
+                          usage.get("completion_tokens", len(lps)), 1, (sum(lps) / len(lps)) if lps else None)
     return sql
 
 

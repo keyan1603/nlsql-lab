@@ -76,6 +76,7 @@ class TierOutput:
     tokens_in: int = 0
     tokens_out: int = 0
     calls: int = 1                      # model calls made inside the tier (the SQL tier's retry loop can make up to 3)
+    confidence: float | None = None     # mean token log-probability of the reply, when the tier can report it
 
 
 @dataclass
@@ -181,6 +182,7 @@ class HybridRecord:
     gate_decision: str = ""                              # sql (let through) | refusal | clarify | skipped | error
     rules_families: list = field(default_factory=list)
     gate_sql_present: bool = False                       # the gate (3B) produced a SQL statement (agreement mode only)
+    confidence: float | None = None                      # mean token log-probability of the answering 7B reply (confidence mode only)
     agree: bool | None = None                            # 3B and 7B result sets equal; None when the check was not applicable
     latency_s: dict = field(default_factory=dict)        # wall seconds per tier
     tokens: dict = field(default_factory=dict)           # per tier: {"in": n, "out": n, "calls": n}
@@ -197,7 +199,8 @@ class HybridPipeline:
     def __init__(self, gate: GateTier, sql: SqlTier, hosted: HostedTier, executor: Executor, policy: Policy | str = Policy.OPEN,
                  rules_threshold: int = 1, order: str = "gate_first", escalate_on_decline: bool = False,
                  agreement: bool = False, rules: bool | None = None, compare: Comparator = same_result,
-                 cost: CostEstimator | None = None, audit: AuditLog | None = None, clock: Callable[[], float] = time.perf_counter):
+                 cost: CostEstimator | None = None, audit: AuditLog | None = None, clock: Callable[[], float] = time.perf_counter,
+                 confidence_threshold: float | None = None):
         """gate, sql, hosted: callables question -> TierOutput. executor: (question, sql) -> ExecOutcome.
         escalate_on_decline: when False (default, as in the saved-answer simulation) a decline from the 7B after the gate let the
         question through is accepted as the answer; when True it escalates like any other untrusted local result.
@@ -206,14 +209,18 @@ class HybridPipeline:
         mismatch escalates with the reason "the 3B and 7B disagree". If either side has no runnable SQL there is no agreement signal
         (agree stays None) and the ordinary error / empty / invented-value checks decide.
         rules: use the wording rules at all. Default: on without agreement, OFF with it (the rules did not transfer to the held-out
-        set, docs/results/heldout.md); pass rules=True to combine them."""
+        set, docs/results/heldout.md); pass rules=True to combine them.
+        confidence_threshold: single-model mode. The gate tier is NOT called; the SQL tier (one call, no repair) answers or declines on
+        its own, and a SQL answer whose mean token log-probability is below this value escalates (reason "low confidence") after the
+        ordinary checks. Rules are off unless rules=True. The threshold must be chosen on separate data (docs/results/confidence_signal.md)."""
         if order not in ("gate_first", "rules_first"):
             raise ValueError("order must be 'gate_first' or 'rules_first'")
         self.gate, self.sql_tier, self.hosted_tier, self.executor = gate, sql, hosted, executor
         self.policy = Policy.parse(policy) if not isinstance(policy, Policy) else policy
         self.rules_threshold, self.order, self.escalate_on_decline = rules_threshold, order, escalate_on_decline
         self.agreement, self.compare = agreement, compare
-        self.use_rules = (not agreement) if rules is None else rules
+        self.confidence_threshold = confidence_threshold
+        self.use_rules = (not (agreement or confidence_threshold is not None)) if rules is None else rules
         self.cost, self.audit, self.clock = cost, audit, clock
 
     # -- helpers
@@ -290,19 +297,22 @@ class HybridPipeline:
 
         # 1. gate
         gate_sql = None
-        try:
-            g = self._timed(rec, GATE, self.gate, question)
-            gp = extract(g.text)
-            rec.gate_decision = gp.kind
-            gate_sql = gp.sql if (self.agreement and gp.kind == "sql") else None
-            rec.gate_sql_present = bool(gate_sql and gate_sql.strip())
-            if gp.kind in ("refusal", "clarify"):
-                rec.answered_by, rec.final_kind, rec.final_text = GATE, gp.kind, g.text
-                return self._finish(rec)
-        except EgressBlocked:
-            raise
-        except Exception as exc:                      # fail open: a broken gate must not block answering; the SQL tier and checks still run
-            rec.gate_decision, rec.error = "error", type(exc).__name__
+        if self.confidence_threshold is not None:
+            rec.gate_decision = "skipped"             # single-model mode: the 7B is its own gate
+        else:
+            try:
+                g = self._timed(rec, GATE, self.gate, question)
+                gp = extract(g.text)
+                rec.gate_decision = gp.kind
+                gate_sql = gp.sql if (self.agreement and gp.kind == "sql") else None
+                rec.gate_sql_present = bool(gate_sql and gate_sql.strip())
+                if gp.kind in ("refusal", "clarify"):
+                    rec.answered_by, rec.final_kind, rec.final_text = GATE, gp.kind, g.text
+                    return self._finish(rec)
+            except EgressBlocked:
+                raise
+            except Exception as exc:                      # fail open: a broken gate must not block answering; the SQL tier and checks still run
+                rec.gate_decision, rec.error = "error", type(exc).__name__
 
         # 2. rules (in gate_first order the gate has already had its say)
         if self.order == "gate_first" and route.target == router.FRONTIER:
@@ -317,6 +327,7 @@ class HybridPipeline:
             rec.error = type(exc).__name__
             return self._escalate(rec, "tier_error", f"the local SQL tier failed ({type(exc).__name__})", question)
         pred = extract(s.text)
+        rec.confidence = s.confidence
         rec.local_candidate_kind, rec.local_candidate_sql = pred.kind, pred.sql
 
         # 4./5. execute and post-check
@@ -341,5 +352,7 @@ class HybridPipeline:
             return self._escalate(rec, "agreement", "the 3B and 7B disagree", question)
         if reason:
             return self._escalate(rec, "postcheck", reason, question)
+        if self.confidence_threshold is not None and s.confidence is not None and s.confidence < self.confidence_threshold:
+            return self._escalate(rec, "confidence", "low confidence: mean token log-probability below the threshold", question)
         rec.answered_by, rec.final_kind, rec.final_text, rec.final_sql, rec.status = SQL, "sql", s.text, pred.sql, res.status
         return self._finish(rec)
