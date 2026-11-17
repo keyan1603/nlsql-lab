@@ -55,7 +55,8 @@ def main() -> int:
         gc = sec_cost(r["g"]["latency_s"])
         if r["g"]["kind"] != "sql":
             return r["g"]["passed"], gc
-        xc = gc + sec_cost(r["x"]["latency_s"])
+        # when the gate and the SQL model are the same model, its one answer is both: count the call once
+        xc = (0.0 if gate_run == sql_run else gc) + sec_cost(r["x"]["latency_s"])
         bad = status_of(r["x"]) in ("error", "empty") or (r["x"]["kind"] == "sql" and invented_values(r["question"], r["x"].get("sql") or ""))
         if escalate and bad:
             return r["h"]["passed"], xc + usd(r["h"]["tokens_in"], r["h"]["tokens_out"], "Standard")

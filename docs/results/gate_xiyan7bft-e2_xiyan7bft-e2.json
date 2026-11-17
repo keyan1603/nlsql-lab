@@ -13,27 +13,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 127,
    "n": 181,
-   "usd_per_1000": 0.154
+   "usd_per_1000": 0.078
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 140,
    "n": 181,
-   "usd_per_1000": 0.309
+   "usd_per_1000": 0.232
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 147,
    "n": 181,
-   "usd_per_1000": 0.684
+   "usd_per_1000": 0.638
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 147,
    "n": 181,
-   "usd_per_1000": 0.71
+   "usd_per_1000": 0.665
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 140,
    "n": 181,
-   "usd_per_1000": 0.342
+   "usd_per_1000": 0.268
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 160,
@@ -55,27 +55,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 33,
    "n": 36,
-   "usd_per_1000": 0.061
+   "usd_per_1000": 0.04
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 33,
    "n": 36,
-   "usd_per_1000": 0.061
+   "usd_per_1000": 0.04
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 33,
    "n": 36,
-   "usd_per_1000": 0.132
+   "usd_per_1000": 0.112
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 33,
    "n": 36,
-   "usd_per_1000": 0.098
+   "usd_per_1000": 0.078
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 33,
    "n": 36,
-   "usd_per_1000": 0.061
+   "usd_per_1000": 0.04
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 34,
@@ -97,27 +97,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 36,
    "n": 52,
-   "usd_per_1000": 0.13
+   "usd_per_1000": 0.069
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 39,
    "n": 52,
-   "usd_per_1000": 0.277
+   "usd_per_1000": 0.216
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 39,
    "n": 52,
-   "usd_per_1000": 0.304
+   "usd_per_1000": 0.244
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 39,
    "n": 52,
-   "usd_per_1000": 0.305
+   "usd_per_1000": 0.245
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 39,
    "n": 52,
-   "usd_per_1000": 0.277
+   "usd_per_1000": 0.216
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 43,
@@ -139,27 +139,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 12,
    "n": 12,
-   "usd_per_1000": 0.074
+   "usd_per_1000": 0.037
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 12,
    "n": 12,
-   "usd_per_1000": 0.074
+   "usd_per_1000": 0.037
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 12,
    "n": 12,
-   "usd_per_1000": 0.074
+   "usd_per_1000": 0.037
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 12,
    "n": 12,
-   "usd_per_1000": 0.074
+   "usd_per_1000": 0.037
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 12,
    "n": 12,
-   "usd_per_1000": 0.074
+   "usd_per_1000": 0.037
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 10,
@@ -181,27 +181,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 11,
    "n": 24,
-   "usd_per_1000": 0.209
+   "usd_per_1000": 0.104
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 14,
    "n": 24,
-   "usd_per_1000": 0.528
+   "usd_per_1000": 0.424
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 14,
    "n": 24,
-   "usd_per_1000": 0.587
+   "usd_per_1000": 0.485
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 14,
    "n": 24,
-   "usd_per_1000": 0.589
+   "usd_per_1000": 0.487
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 14,
    "n": 24,
-   "usd_per_1000": 0.528
+   "usd_per_1000": 0.424
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 19,
@@ -265,27 +265,27 @@
   "3B decline gate + 7B SQL": {
    "correct": 2,
    "n": 4,
-   "usd_per_1000": 0.109
+   "usd_per_1000": 0.054
   },
   "3B decline gate + 7B SQL, escalate on error, empty or invented value": {
    "correct": 2,
    "n": 4,
-   "usd_per_1000": 0.109
+   "usd_per_1000": 0.054
   },
   "Rules 1+ first, then 3B gate, then 7B with escalation": {
    "correct": 2,
    "n": 4,
-   "usd_per_1000": 0.109
+   "usd_per_1000": 0.054
   },
   "3B gate first, then rules 1+, then 7B with escalation": {
    "correct": 2,
    "n": 4,
-   "usd_per_1000": 0.109
+   "usd_per_1000": 0.054
   },
   "3B gate first, then rules 2+, then 7B with escalation": {
    "correct": 2,
    "n": 4,
-   "usd_per_1000": 0.109
+   "usd_per_1000": 0.054
   },
   "All hosted (gemini-3.5-flash-lite)": {
    "correct": 3,
