@@ -142,6 +142,13 @@ def render() -> str:
                 else:
                     L.append(f"| {name} | {a['passed']} of {a['n']} ({_pct(a['passed'], a['n'])}) | ${a['usd_per_1000']['total']:.2f} | not simulated | |")
             L.append("")
+        elif s["policy"] == "open" and "+confidence" in s["order"]:
+            L += ["Single-model mode: the tuned 7B is its own gate, one attempt, and an answer below the log-probability threshold escalates. "
+                  "The saved-answer estimate for the same threshold is in `docs/results/confidence_signal.md` (held-out: 45 of 52 at 40.4% sent up).", "",
+                  "| Pool | Live correct | Live USD per 1,000 |", "|---|---|---|"]
+            for name, a in s["pools"].items():
+                L.append(f"| {name} | {a['passed']} of {a['n']} ({_pct(a['passed'], a['n'])}) | ${a['usd_per_1000']['total']:.2f} |")
+            L.append("")
         elif s["policy"] == "open":
             sim_row = SIM_ROWS[s["order"]]
             L += [f"Live against the saved-answer simulation (`docs/results/gate.md`; simulated row: {sim_row}).", "",
