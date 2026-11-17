@@ -310,3 +310,17 @@ The routing rules and the invented-value check were written after the test categ
 - **The runtime checks held up.** Escalating on a SQL error, an empty result, a decline or an invented value kept working (76.2% to 80.8%), and the 3B gate got all 12 should-decline questions right where the 7B alone got none.
 - **Two-model agreement is the best signal found.** When the tuned 3B and the 7B return the same result set the 7B is right 91 to 92% of the time (84 of 91 on the pool, 20 of 22 on the new set); when they disagree it is right 52 to 55% (`scripts/agreement_router.py`). Escalating on disagreement gave 85.1% at $0.67 per 1,000 on the pool and 84.6% on the new set, within noise of all-hosted. It was found after seeing the pool, so the new-set result is the out-of-sample check, and with 52 questions its size is not measurable.
 - **The live pipeline matches the simulation.** `nlsql/hybrid.py` runs gate, rules, 7B, checks and hosted fallback per question. On the 181 pool it scored 147 correct at $0.64 per 1,000, the same count and cost as the saved-answer simulation, and 35 of 36 on the decline set. In `sealed` mode (hosted model forbidden) every one of 300 network events on the held-out set went to the local model server, a deliberate test connection to a public address was blocked, and 7 of 52 questions were withheld for escalation (`docs/results/hybrid.md`, `nlsql/egress.py`). The egress monitor sees only this Python process.
+
+## Licences
+
+The code in this repository is MIT licensed (`LICENSE`). The models are not covered by that licence and stay under their own terms. Checked against the Hugging Face model cards on 2026-11-17:
+
+| Model | Licence on its card | What it means here |
+|---|---|---|
+| XiYanSQL-QwenCoder-7B-2504 (the SQL model, and the base of the QLoRA fine-tune) | Apache-2.0 | Commercial use and redistribution of derivatives allowed under the Apache terms. |
+| XiYanSQL-QwenCoder-14B-2504 | Apache-2.0 | Same. |
+| XiYanSQL-QwenCoder-3B-2502 | Apache-2.0 | The card says Apache-2.0 but does not name its base. The name says it derives from Qwen2.5-Coder-3B, which is Qwen Research licensed (below), so treat the card's label with caution. |
+| Qwen2.5-Coder-7B-Instruct | Apache-2.0 | Same as above. |
+| Qwen2.5-Coder-3B-Instruct (base of the tuned 3B gate) | Qwen Research License | Non-commercial (research or evaluation only). Commercial use needs a separate licence from Alibaba Cloud. Redistributed derivatives must carry the licence text and "Built with Qwen" or "Improved using Qwen" notice. |
+
+This repository publishes no model weights, adapters or GGUF files, only the code, data generators and training data. If you share or deploy the tuned 3B gate, the Qwen research terms apply to it; the 7B path rests on Apache-2.0 cards. This is a plain reading of the model cards, not legal advice, and the XiYan cards do not document their lineage.
