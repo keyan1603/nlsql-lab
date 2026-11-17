@@ -115,6 +115,12 @@ def main() -> int:
 
     RUNS.mkdir(exist_ok=True)
     out_path, audit_path = RUNS / f"hybrid-{args.label}.jsonl", RUNS / f"hybrid-{args.label}.audit.jsonl"
+    cfg = {"policy": args.policy, "order": args.order, "agreement": args.agreement, "with_rules": args.with_rules, "rules_threshold": args.rules_threshold,
+           "confidence_threshold": args.confidence_threshold, "gate_model": args.gate_model, "sql_model": args.sql_model}
+    cfg_path = RUNS / f"hybrid-{args.label}.config.json"
+    if cfg_path.exists() and not args.fresh and json.loads(cfg_path.read_text(encoding="utf-8")) != cfg:
+        ap.error(f"{args.label}: saved answers were produced with different settings ({cfg_path.name}); use a new --label or --fresh")
+    cfg_path.write_text(json.dumps(cfg, indent=1), encoding="utf-8")
     saved = {} if args.fresh else load_saved(out_path)
     if args.fresh:
         for p in (out_path, audit_path, RUNS / f"hybrid-{args.label}.egress.jsonl"):

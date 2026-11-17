@@ -138,7 +138,7 @@ class AuditLog:
 
     FIELDS = ("ts", "run", "qid", "question_sha256", "policy", "order", "tiers", "answered_by", "final_kind", "status",
               "escalation_source", "escalation_reason", "withheld", "left_boundary", "gate_decision", "gate_sql_present", "agree",
-              "latency_s", "tokens", "cost_usd", "error")
+              "mode", "confidence", "latency_s", "tokens", "cost_usd", "error")
 
     def __init__(self, path: Path, run: str = ""):
         self.path = Path(path)
@@ -151,7 +151,7 @@ class AuditLog:
                 "question_sha256": hashlib.sha256(rec.question.encode("utf-8")).hexdigest()[:16], "policy": rec.policy, "order": rec.order,
                 "tiers": rec.tiers, "answered_by": rec.answered_by, "final_kind": rec.final_kind, "status": rec.status,
                 "escalation_source": rec.escalation_source, "escalation_reason": rec.escalation_reason, "withheld": rec.withheld,
-                "left_boundary": rec.left_boundary, "gate_decision": rec.gate_decision, "gate_sql_present": rec.gate_sql_present, "agree": rec.agree, "latency_s": rec.latency_s, "tokens": rec.tokens,
+                "left_boundary": rec.left_boundary, "gate_decision": rec.gate_decision, "gate_sql_present": rec.gate_sql_present, "agree": rec.agree, "mode": rec.mode, "confidence": rec.confidence, "latency_s": rec.latency_s, "tokens": rec.tokens,
                 "cost_usd": rec.cost_usd, "error": rec.error}
         assert set(line) == set(self.FIELDS)
         with self._lock, self.path.open("a", encoding="utf-8") as f:
@@ -166,6 +166,7 @@ class HybridRecord:
     question: str
     policy: str
     order: str
+    mode: str = ""                                       # '' (gate + 7B), 'agreement' or 'confidence': the audit line says which strategy ran
     tiers: list = field(default_factory=list)            # every tier touched, in order: gate, sql, hosted
     answered_by: str = ""                                # gate | sql | hosted | withheld
     final_kind: str = ""                                 # sql | refusal | clarify | withheld | error
@@ -285,7 +286,8 @@ class HybridPipeline:
 
     # -- the flow
     def answer(self, qid: str, question: str) -> HybridRecord:
-        rec = HybridRecord(qid=qid, question=question, policy=self.policy.value, order=self.order)
+        rec = HybridRecord(qid=qid, question=question, policy=self.policy.value, order=self.order,
+                           mode="confidence" if self.confidence_threshold is not None else "agreement" if self.agreement else "")
         route = router.route(question, self.rules_threshold)
         rec.rules_families = list(route.families)     # always reported, even when the rules are not acted on
         if not self.use_rules:
@@ -345,8 +347,8 @@ class HybridPipeline:
             if gres.status != "error" and res.result is not None and gres.result is not None:
                 try:
                     rec.agree = bool(self.compare(gres.result, res.result))
-                except Exception:                     # an unexpected value type in a result: no signal rather than a crash
-                    rec.agree = None
+                except Exception as exc:              # an unexpected value type in a result: no signal rather than a crash, but say so
+                    rec.agree, rec.error = None, rec.error or f"Comparator:{type(exc).__name__}"
         reason = router.escalate("sql", res.status, question, pred.sql)
         if not reason and rec.agree is False:
             return self._escalate(rec, "agreement", "the 3B and 7B disagree", question)

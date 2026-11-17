@@ -399,3 +399,20 @@ def test_a_decline_is_not_second_guessed_by_confidence():
     p, gate, sql, hosted = conf_pipe(-0.5, text="-- UNANSWERABLE: no such data")
     r = p.answer("Q1", ROUTINE)
     assert r.final_kind == "refusal" and hosted.calls == 0 and r.answered_by == "sql"
+
+
+def test_audit_line_names_the_strategy_and_confidence(tmp_path):
+    audit = AuditLog(tmp_path / "a.jsonl", run="t")
+    p, *_ = conf_pipe(-0.02)
+    p.audit = audit
+    p.answer("Q1", ROUTINE)
+    line = json.loads((tmp_path / "a.jsonl").read_text().splitlines()[0])
+    assert line["mode"] == "confidence" and line["confidence"] == -0.02
+
+
+def test_comparator_failure_is_recorded_not_swallowed():
+    def boom(a, b):
+        raise ValueError("odd value")
+    p, *_ = agree_pipe(compare=boom)
+    r = p.answer("Q1", ROUTINE)
+    assert r.agree is None and r.error == "Comparator:ValueError"
